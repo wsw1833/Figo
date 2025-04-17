@@ -11,7 +11,7 @@ export default function Home() {
   const router = useRouter();
 
   const connectHandler = () => {
-    router.push('/main/1');
+    router.push('/1/main');
   };
   return (
     <div className=" min-w-screen h-screen py-[10rem]">

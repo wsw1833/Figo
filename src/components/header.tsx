@@ -86,7 +86,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
             <NavigationMenuContent>
               <ul className="grid w-max gap-3 md:p-4 p-2">
                 <ListItem
-                  href={`./main/${uid}`}
+                  href={`./${uid}/main`}
                   title="Profile"
                   icon={<User className="h-4 w-4" />}
                 >
