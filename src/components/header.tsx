@@ -38,7 +38,6 @@ export function Header({ uid }: { uid: string }): JSX.Element {
 
       <NavigationMenu>
         <NavigationMenuList>
-          {/* Click to open dialog */}
           <NavigationMenuItem>
             <Drawer>
               <DrawerTrigger asChild>
@@ -62,7 +61,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
                       style={{ width: 300, height: 300 }}
                     />
                     <span className="w-full relative flex justify-center md:text-base">
-                      Please place the device close to the Noom.
+                      Please place the device close to the Noöm.
                     </span>
                   </DrawerDescription>
                 </DrawerHeader>
@@ -80,7 +79,6 @@ export function Header({ uid }: { uid: string }): JSX.Element {
             </Drawer>
           </NavigationMenuItem>
 
-          {/* Hover dropdown for settings */}
           <NavigationMenuItem>
             <NavigationMenuTrigger className="md:text-lg">
               Settings
@@ -88,7 +86,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
             <NavigationMenuContent>
               <ul className="grid w-max gap-3 md:p-4 p-2">
                 <ListItem
-                  href={`./${uid}/main`}
+                  href={`./main/${uid}`}
                   title="Profile"
                   icon={<User className="h-4 w-4" />}
                 >
