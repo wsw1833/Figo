@@ -1,86 +1,73 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { NextRequest, NextResponse } from 'next/server';
 
+// Load environment variables from .env file
 dotenv.config();
-const MONGODB_URI = process.env.MONGODB_URI as string;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
-}
+// MongoDB connection URI from environment variables
+const MONGODB_URI =
+  process.env.MONGODB_URI || 'mongodb://localhost:27017/myProject';
 
-interface MongooseCache {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
-}
+// Connection options
+const options: mongoose.ConnectOptions = {
+  autoIndex: true,
+};
 
-declare global {
-  var mongoose: MongooseCache | undefined;
-}
+class DatabaseConnection {
+  private static instance: DatabaseConnection;
 
-let cached = global.mongoose || { conn: null, promise: null };
+  private constructor() {
+    // Set up mongoose connection events
+    mongoose.connection.on('connected', () => {
+      console.log('MongoDB connection established successfully');
+    });
 
-if (!global.mongoose) {
-  global.mongoose = cached;
-}
+    mongoose.connection.on('error', (err) => {
+      console.error(`MongoDB connection error: ${err}`);
+    });
 
-// Main database connection function
-async function dbConnect(): Promise<typeof mongoose> {
-  if (cached.conn) {
-    return cached.conn;
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB connection disconnected');
+    });
+
+    // Handle application termination
+    process.on('SIGINT', async () => {
+      await this.disconnect();
+      process.exit(0);
+    });
   }
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
+  public static getInstance(): DatabaseConnection {
+    if (!DatabaseConnection.instance) {
+      DatabaseConnection.instance = new DatabaseConnection();
+    }
+    return DatabaseConnection.instance;
+  }
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('connected to MongoDB');
+  public async connect(): Promise<typeof mongoose> {
+    if (mongoose.connection.readyState === 1) {
       return mongoose;
-    });
+    }
+
+    try {
+      await mongoose.connect(MONGODB_URI, options);
+      return mongoose;
+    } catch (error) {
+      console.error('Failed to connect to MongoDB', error);
+      throw error;
+    }
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  public async disconnect(): Promise<void> {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+      console.log('MongoDB connection closed');
+    }
+  }
+
+  public getConnection(): typeof mongoose {
+    return mongoose;
+  }
 }
 
-// CORS middleware function
-export function corsMiddleware(
-  req: NextRequest
-): Record<string, string> | NextResponse {
-  // Define allowed origins - update with your actual domains
-  const allowedOrigins = ['http://localhost:3000', 'https://yourdomain.com'];
-
-  const origin = req.headers.get('origin');
-
-  const corsHeaders: Record<string, string> = {
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-
-  // If origin exists and is in allowed list, add it to headers
-  if (origin && allowedOrigins.includes(origin)) {
-    Object.assign(corsHeaders, {
-      'Access-Control-Allow-Origin': origin,
-    });
-  } else {
-    // For public APIs you might want to allow any origin
-    // Object.assign(corsHeaders, {
-    //   'Access-Control-Allow-Origin': '*'
-    // });
-  }
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      status: 204,
-      headers: corsHeaders,
-    });
-  }
-
-  return corsHeaders;
-}
-
-export default dbConnect;
+export default DatabaseConnection;

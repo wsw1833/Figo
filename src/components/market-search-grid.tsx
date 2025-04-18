@@ -1,5 +1,8 @@
 'use client';
 
+import Iota from '@images/Iota-circle.svg';
+import Image from 'next/image';
+import pinata from '@images/pinata.png';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -13,10 +16,7 @@ import {
   SheetTitle,
 } from './ui/sheet';
 import { Button } from './ui/button';
-import Iota from '@images/Iota-circle.svg';
-import Image from 'next/image';
 import { Badge } from './ui/badge';
-import pinata from '@images/pinata.png';
 
 const itemsData = [
   {

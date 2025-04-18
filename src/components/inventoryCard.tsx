@@ -3,10 +3,11 @@
 import { MoreHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuContent,
+} from './ui/dropdown-menu';
 
 interface CardProps {
   imageSrc: string;
@@ -14,8 +15,6 @@ interface CardProps {
   title: string;
   description: string;
   alt?: string;
-  onViewDetails?: () => void;
-  onUnequip?: () => void;
 }
 
 export default function InventoryCard({
@@ -24,9 +23,9 @@ export default function InventoryCard({
   title,
   description,
   alt = 'NFT Inventory image',
-  onViewDetails = () => console.log(`View details for ${name}`),
-  onUnequip = () => console.log(`Unequip ${name}`),
 }: CardProps) {
+  const onViewDetails = () => console.log(`View details for ${name}`);
+  const onUnequip = () => console.log(`Unequip ${name}`);
   return (
     <div className="flex items-center p-3 mb-4 rounded-[16px] border border-gray-200 bg-white shadow-sm">
       <div className="flex-shrink-0 mr-4">
@@ -52,29 +51,27 @@ export default function InventoryCard({
       </div>
 
       <div className="flex-shrink-0 ml-2">
-        <Popover>
-          <PopoverTrigger asChild>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <button className="p-1 text-blue-500 hover:bg-blue-50 rounded-full">
               <MoreHorizontal className="h-5 w-5" />
             </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-40 p-0" align="end">
-            <div className="flex flex-col">
-              <button
-                className="flex items-center px-3 py-2 text-sm hover:bg-gray-100 transition-colors"
-                onClick={onViewDetails}
-              >
-                View details
-              </button>
-              <button
-                className="flex items-center px-3 py-2 text-sm hover:bg-gray-100 text-red-500 transition-colors"
-                onClick={onUnequip}
-              >
-                Unequip
-              </button>
-            </div>
-          </PopoverContent>
-        </Popover>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-40 p-0" align="end">
+            <DropdownMenuItem
+              className="flex items-center px-3 py-2 text-sm cursor-pointer"
+              onClick={onViewDetails}
+            >
+              View details
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center px-3 py-2 text-sm text-red-500 cursor-pointer"
+              onClick={onUnequip}
+            >
+              Unequip
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

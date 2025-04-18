@@ -202,24 +202,18 @@ function CollectionSheetContent({ item }: { item: CollectionItem }) {
             name="John Doe"
             title="Software Engineer"
             description="Frontend developer specializing in React and TypeScript"
-            onViewDetails={() => alert('Viewing details for John Doe')}
-            onUnequip={() => alert('Unequipped John Doe')}
           />
           <InventoryCard
             imageSrc="/placeholder.svg?height=40&width=40"
             name="Jane Smith"
             title="Product Designer"
             description="Creating beautiful and functional user interfaces"
-            onViewDetails={() => alert('Viewing details for Jane Smith')}
-            onUnequip={() => alert('Unequipped Jane Smith')}
           />
           <InventoryCard
             imageSrc="/placeholder.svg?height=40&width=40"
             name="Alex Johnson"
             title="Project Manager"
             description="Experienced in leading cross-functional teams and delivering complex projects on time and within budget"
-            onViewDetails={() => alert('Viewing details for Alex Johnson')}
-            onUnequip={() => alert('Unequipped Alex Johnson')}
           />
         </div>
       </div>

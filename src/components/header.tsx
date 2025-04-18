@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { LogOut, User } from 'lucide-react';
 import nightly from '@images/nfc.svg';
