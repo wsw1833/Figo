@@ -90,7 +90,7 @@ export default function TabsWithSearchGrid() {
   return (
     <Tabs
       defaultValue="collections"
-      className="w-full h-max flex flex-col items-center justify-center"
+      className="w-full h-max flex flex-col items-center justify-center px-10"
       onValueChange={(value) => setActiveTab(value)}
     >
       <TabsList className="h-max bg-[#F7F7F7]">
@@ -112,8 +112,11 @@ export default function TabsWithSearchGrid() {
         />
       </div>
 
-      <TabsContent value="collections" className="w-full ">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+      <TabsContent
+        value="collections"
+        className="w-full flex items-center justify-center"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-4 gap-2 w-full">
           {filteredCollections.map((collection) => (
             <MagicalCard
               key={collection.id}
@@ -129,8 +132,11 @@ export default function TabsWithSearchGrid() {
         </div>
       </TabsContent>
 
-      <TabsContent value="accessories" className="w-full">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+      <TabsContent
+        value="accessories"
+        className="w-full flex items-center justify-center"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-4 gap-2 w-full">
           {filteredAccessories.map((accessory) => (
             <MagicalCard
               key={accessory.id}

@@ -33,7 +33,7 @@ import {
 
 export function Header({ uid }: { uid: string }): JSX.Element {
   return (
-    <div className="w-full h-max flex flex-row md:px-16 px-6 items-start justify-between">
+    <div className="w-full h-max flex flex-row md:px-16 sm:px-6 px-4 items-start justify-between">
       <Image src={logo} alt="logo" className="w-14 h-14" priority />
 
       <NavigationMenu>
@@ -86,7 +86,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
             <NavigationMenuContent>
               <ul className="grid w-max gap-3 md:p-4 p-2">
                 <ListItem
-                  href={`./${uid}/main`}
+                  href={`/${uid}/main`}
                   title="Profile"
                   icon={<User className="h-4 w-4" />}
                 >
