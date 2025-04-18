@@ -8,7 +8,7 @@ export default function homeLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
+    <div className="min-h-max h-full">
       {children}
       <BottomTabs />
     </div>

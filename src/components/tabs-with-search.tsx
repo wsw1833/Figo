@@ -3,15 +3,8 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MagicCard } from './magicui/magic-card';
+import MagicalCard from './magicalCard';
 import {
   Sheet,
   SheetContent,
@@ -26,6 +19,14 @@ import IotaExplorer from '@images/Iota-logo.png';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
 import pinata from '@images/pinata.png';
+import InventoryCard from './inventoryCard';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 
 // Sample data for collections and accessories
 const collectionsData = [
@@ -161,48 +162,6 @@ export default function TabsWithSearchGrid() {
   );
 }
 
-// Magic Card component with hover effects
-function MagicalCard({
-  title,
-  description,
-  onClick,
-  tabs,
-}: {
-  title: string;
-  description: string;
-  onClick?: () => void;
-  tabs: string;
-}) {
-  return (
-    <Card className="overflow-hidden group md:mx-4" onClick={onClick}>
-      <MagicCard>
-        {tabs === 'collections' ? (
-          <div className="h-60 bg-gradient-to-br from-purple-400 to-pink-500 "></div>
-        ) : (
-          <div className="h-60 w-full bg-gradient-to-br from-blue-400 to-teal-500 rounded-lg"></div>
-        )}
-
-        <CardHeader className="p-4">
-          <div className="text-xs text-muted-foreground font-medium flex flex-row relative items-center justify-between w-full ">
-            {title} <Image src={Iota} alt="iota" className="w-5 h-5" />
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 h-[5rem]">
-          <CardTitle className="text-lg text-[#0A0B12] relative flex">
-            {description}
-          </CardTitle>
-          <p className="text-sm text-[#0A0B12] mt-1">#tokenID</p>
-        </CardContent>
-        <CardFooter className="p-4 pt-0">
-          <div className="text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-muted-foreground">
-            Click to view details
-          </div>
-        </CardFooter>
-      </MagicCard>
-    </Card>
-  );
-}
-
 function CollectionSheetContent({ item }: { item: CollectionItem }) {
   return (
     <>
@@ -227,18 +186,36 @@ function CollectionSheetContent({ item }: { item: CollectionItem }) {
       <div className="py-6">
         <div className="h-60 w-full bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg mb-4"></div>
         <h3 className="font-medium text-lg">Asset Description</h3>
-        <p className="text-base mb-4">{item.description}</p>
-        <h3 className="font-medium text-lg">NFT Inventory</h3>
-        <div className="w-full h-10 border-2 my-2 rounded-[12px] border-black">
-          body
+        <p className="text-base mb-4 text-muted-foreground">
+          {item.description}
+        </p>
+        <h3 className="font-medium text-lg my-2">NFT Inventory</h3>
+        <div className="space-y-4">
+          <InventoryCard
+            imageSrc="/placeholder.svg?height=40&width=40"
+            name="John Doe"
+            title="Software Engineer"
+            description="Frontend developer specializing in React and TypeScript"
+            onViewDetails={() => alert('Viewing details for John Doe')}
+            onUnequip={() => alert('Unequipped John Doe')}
+          />
+          <InventoryCard
+            imageSrc="/placeholder.svg?height=40&width=40"
+            name="Jane Smith"
+            title="Product Designer"
+            description="Creating beautiful and functional user interfaces"
+            onViewDetails={() => alert('Viewing details for Jane Smith')}
+            onUnequip={() => alert('Unequipped Jane Smith')}
+          />
+          <InventoryCard
+            imageSrc="/placeholder.svg?height=40&width=40"
+            name="Alex Johnson"
+            title="Project Manager"
+            description="Experienced in leading cross-functional teams and delivering complex projects on time and within budget"
+            onViewDetails={() => alert('Viewing details for Alex Johnson')}
+            onUnequip={() => alert('Unequipped Alex Johnson')}
+          />
         </div>
-        <div className="w-full h-10 border-2 my-2 rounded-[12px] border-black">
-          weapon
-        </div>
-        <div className="w-full h-10 border-2 my-2 rounded-[12px] border-black">
-          boots
-        </div>
-        <div className="space-y-4"></div>
       </div>
       <SheetFooter className="w-full gap-2">
         <Button className="w-full bg-[#4C52E2] hover:bg-[#3733CB]">
@@ -257,10 +234,32 @@ function CollectionSheetContent({ item }: { item: CollectionItem }) {
 // Accessory Sheet Content
 function AccessorySheetContent({ item }: { item: AccessoryItem }) {
   const [isEquipped, setIsEquipped] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [magicalCards, setMagicalCards] = useState<AccessoryItem[]>([
+    { id: 1, title: 'Magic Sword', description: 'A powerful sword' },
+    { id: 2, title: 'Magic Shield', description: 'A sturdy shield' },
+    { id: 3, title: 'Magic Helmet', description: 'A protective helmet' },
+    { id: 4, title: 'Magic Boots', description: 'Fast running boots' },
+    { id: 5, title: 'Magic Gloves', description: 'Powerful gloves' },
+    { id: 6, title: 'Magic Ring', description: 'A mysterious ring' },
+  ]);
 
   const handleClick = () => {
     const newState = !isEquipped;
     setIsEquipped(newState);
+
+    if (newState) {
+      setIsDialogOpen(true);
+    }
+  };
+
+  const handleCardSelect = (card: AccessoryItem) => {
+    // Handle the card selection logic here
+    console.log('Selected card:', card);
+
+    // Close the dialog after selection
+    setIsDialogOpen(false);
   };
   return (
     <>
@@ -305,9 +304,13 @@ function AccessorySheetContent({ item }: { item: AccessoryItem }) {
       >
         {isEquipped ? 'Unequip' : 'Equip'}
       </Button>
-      <SheetDescription className="font-light text-[#737373] mb-4">
-        If equipped then change to unequip and Equipped at Link tokenID
-      </SheetDescription>
+      {isEquipped ? (
+        <SheetDescription className="font-light text-[#737373] mb-4">
+          Equipped at Token #1234
+        </SheetDescription>
+      ) : (
+        <></>
+      )}
       <SheetFooter className="w-full">
         <Button className="w-full bg-[#4C52E2] hover:bg-[#3733CB]">
           Inspect IPFS on Pinata{' '}
@@ -318,6 +321,26 @@ function AccessorySheetContent({ item }: { item: AccessoryItem }) {
           <Image src={IotaExplorer} alt="Iota explorer" className="w-5 h-5" />
         </Button>
       </SheetFooter>
+
+      <Dialog open={isEquipped && isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[80%] max-h-[80vh] overflow-y-auto p-4">
+          <DialogHeader className="flex justify-between items-center">
+            <DialogTitle>Choose a Collectible to Equip</DialogTitle>
+            <DialogClose className="rounded-full hover:bg-muted p-2"></DialogClose>
+          </DialogHeader>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mt-4">
+            {magicalCards.map((card) => (
+              <MagicalCard
+                key={card.id}
+                title={card.title}
+                description={card.description}
+                tabs="accessories"
+                onClick={() => handleCardSelect(card)}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
