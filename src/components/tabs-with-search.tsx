@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MagicCard } from './magicui/magic-card';
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -53,11 +52,25 @@ const accessoriesData = [
   { id: 6, title: 'Hats', description: 'Trendy headwear' },
 ];
 
+interface CollectionItem {
+  id: number;
+  title: string;
+  description: string;
+}
+
+interface AccessoryItem {
+  id: number;
+  title: string;
+  description: string;
+}
+
+type Item = CollectionItem | AccessoryItem;
+
 export default function TabsWithSearchGrid() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('collections');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('collections');
 
   // Filter collections based on search query
   const filteredCollections = collectionsData.filter(
@@ -190,7 +203,7 @@ function MagicalCard({
   );
 }
 
-function CollectionSheetContent({ item }: { item: any }) {
+function CollectionSheetContent({ item }: { item: CollectionItem }) {
   return (
     <>
       <SheetHeader>
@@ -242,7 +255,7 @@ function CollectionSheetContent({ item }: { item: any }) {
 }
 
 // Accessory Sheet Content
-function AccessorySheetContent({ item }: { item: any }) {
+function AccessorySheetContent({ item }: { item: AccessoryItem }) {
   const [isEquipped, setIsEquipped] = useState(false);
 
   const handleClick = () => {

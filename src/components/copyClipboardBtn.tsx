@@ -1,9 +1,11 @@
+'use client';
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
 import { formatAddress } from '@/lib/utils';
 
-const copyClipboardBtn = () => {
+const CopyClipboardBtn = () => {
   const ethereumAddress = '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -36,4 +38,4 @@ const copyClipboardBtn = () => {
   );
 };
 
-export default copyClipboardBtn;
+export default CopyClipboardBtn;

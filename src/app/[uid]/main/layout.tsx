@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Header } from '@/components/header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Toaster } from '@/components/ui/toaster';
@@ -10,7 +10,7 @@ export default function mainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let uid: string = '1';
+  const uid: string = '1';
 
   return (
     <div
