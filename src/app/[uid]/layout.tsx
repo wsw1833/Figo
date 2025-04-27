@@ -6,7 +6,7 @@ import { useCurrentWallet } from '@iota/dapp-kit';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function homeLayout({
+export default function HomeLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

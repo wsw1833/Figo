@@ -16,7 +16,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isConnected) {
-      let addresses = currentWallet.accounts;
+      const addresses = currentWallet.accounts;
       router.push(`/${addresses[0].address}/main`);
       localStorage.setItem('walletAddress', addresses[0].address);
     }
@@ -24,7 +24,7 @@ export default function Home() {
 
   const connectHandler = () => {
     if (isConnected) {
-      let addresses = currentWallet.accounts;
+      const addresses = currentWallet.accounts;
       router.push(`/${addresses[0].address}/main`);
       localStorage.setItem('walletAddress', addresses[0].address);
     } else {
