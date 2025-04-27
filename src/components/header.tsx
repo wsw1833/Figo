@@ -8,7 +8,6 @@ import logo from '@images/figo_logo.png';
 import nfcScanAnimation from '@images/mobileNfc.json';
 import Lottie from 'lottie-react';
 import { Button } from './ui/button';
-
 import { cn } from '@/lib/utils';
 import {
   NavigationMenu,
@@ -19,7 +18,6 @@ import {
   NavigationMenuTrigger,
   NavigationMenuContent,
 } from './ui/navigation-menu';
-
 import {
   Drawer,
   DrawerContent,
@@ -30,8 +28,10 @@ import {
   DrawerClose,
   DrawerFooter,
 } from './ui/drawer';
+import { useDisconnectWallet } from '@iota/dapp-kit';
 
-export function Header({ uid }: { uid: string }): JSX.Element {
+export function Header({ addr }: { addr: string }): JSX.Element {
+  const { mutate: disconnect } = useDisconnectWallet();
   return (
     <div className="w-full h-max flex flex-row md:px-16 sm:px-6 px-4 items-start justify-between">
       <Image src={logo} alt="logo" className="w-14 h-14" priority />
@@ -61,7 +61,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
                       style={{ width: 300, height: 300 }}
                     />
                     <span className="w-full relative flex justify-center md:text-base">
-                      Please place the device close to the Noöm.
+                      Please place the device close to the Figo.
                     </span>
                   </DrawerDescription>
                 </DrawerHeader>
@@ -86,7 +86,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
             <NavigationMenuContent>
               <ul className="grid w-max gap-3 md:p-4 p-2">
                 <ListItem
-                  href={`/${uid}/main`}
+                  href={`/${addr}/main`}
                   title="Profile"
                   icon={<User className="h-4 w-4" />}
                 >
@@ -96,6 +96,7 @@ export function Header({ uid }: { uid: string }): JSX.Element {
                   href="/"
                   title="Logout"
                   icon={<LogOut className="h-4 w-4" />}
+                  onClick={() => disconnect()}
                 >
                   Sign out of your account
                 </ListItem>

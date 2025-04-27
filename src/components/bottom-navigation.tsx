@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-export function BottomTabs() {
+export function BottomTabs({ addr }: { addr: string }) {
   const pathname = usePathname();
 
   const isMarketPage = pathname.includes('/market');
@@ -22,13 +22,13 @@ export function BottomTabs() {
         className="w-full flex flex-col h-max items-center justify-center "
       >
         <TabsList className="h-max bg-[#F7F7F7]">
-          <Link href="/1/main" passHref className="w-full">
+          <Link href={`/${addr}/main`} passHref className="w-full">
             <TabsTrigger value="main" className="px-6">
               <Home className="h-6 w-6" />
             </TabsTrigger>
           </Link>
 
-          <Link href="/1/market" passHref className="w-full">
+          <Link href={`/${addr}/market`} passHref className="w-full">
             <TabsTrigger value="market" className="px-6">
               <ShoppingBag className="h-6 w-6" />
             </TabsTrigger>

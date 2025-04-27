@@ -5,8 +5,8 @@ import '@radix-ui/themes/styles.css';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Noöm',
-  description: 'NFT management with Noöm on IOTA',
+  title: 'Figo',
+  description: 'NFT management with Figo on IOTA',
 };
 
 export default function RootLayout({
