@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
 import { formatAddress } from '@/lib/utils';
 import { useState } from 'react';
+import { getFaucetHost, requestIotaFromFaucetV0 } from '@iota/iota-sdk/faucet';
 
 const CopyClipboardBtn = () => {
   const [copied, setCopied] = useState(false);
@@ -21,6 +22,11 @@ const CopyClipboardBtn = () => {
       if (address) {
         await navigator.clipboard.writeText(address);
         setCopied(true);
+
+        await requestIotaFromFaucetV0({
+          host: getFaucetHost('testnet'),
+          recipient: address,
+        });
 
         toast({
           title: 'Success!',

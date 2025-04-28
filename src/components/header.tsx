@@ -28,10 +28,30 @@ import {
   DrawerClose,
   DrawerFooter,
 } from './ui/drawer';
-import { useDisconnectWallet } from '@iota/dapp-kit';
+import {
+  useDisconnectWallet,
+  useSignAndExecuteTransaction,
+  useIotaClient,
+} from '@iota/dapp-kit';
+import { mintParentNFT } from '@/app/actions/mint_parentNFT';
+import { collection_ID } from '@/lib/constant';
 
 export function Header({ addr }: { addr: string }): JSX.Element {
   const { mutate: disconnect } = useDisconnectWallet();
+  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+  const client = useIotaClient();
+
+  const handleMintParent = () => {
+    mintParentNFT(
+      collection_ID,
+      'Garfield',
+      'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
+      `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
+      signAndExecuteTransaction,
+      client
+    );
+  };
+
   return (
     <div className="w-full h-max flex flex-row md:px-16 sm:px-6 px-4 items-start justify-between">
       <Image src={logo} alt="logo" className="w-14 h-14" priority />
@@ -43,6 +63,7 @@ export function Header({ addr }: { addr: string }): JSX.Element {
               <DrawerTrigger asChild>
                 <button
                   className={`${navigationMenuTriggerStyle()} gap-1 md:text-lg flex items-center justify-center`}
+                  onClick={handleMintParent}
                 >
                   Scan
                   <Image src={nightly} alt="logo" className="w-6 h-6" />
