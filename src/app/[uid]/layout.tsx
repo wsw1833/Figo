@@ -2,9 +2,9 @@
 
 import { BottomTabs } from '@/components/bottom-navigation';
 import { Header } from '@/components/header';
-import { useCurrentWallet } from '@iota/dapp-kit';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Toaster } from '@/components/ui/toaster';
 
 export default function HomeLayout({
   children,
@@ -12,15 +12,14 @@ export default function HomeLayout({
   children: React.ReactNode;
 }>) {
   const router = useRouter();
-  const { connectionStatus } = useCurrentWallet();
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState<string | null>('');
 
   useEffect(() => {
-    if (connectionStatus === 'disconnected') {
+    const addr = localStorage.getItem('walletAddress');
+    if (!addr) {
       router.push('/');
     }
-    const addr = localStorage.getItem('walletAddress');
-    if (addr) setAddress(addr);
+    setAddress(addr);
   }, []);
 
   return (
@@ -29,6 +28,7 @@ export default function HomeLayout({
 
       {children}
       <BottomTabs addr={address} />
+      <Toaster />
     </div>
   );
 }

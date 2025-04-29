@@ -23,10 +23,10 @@ const CopyClipboardBtn = () => {
         await navigator.clipboard.writeText(address);
         setCopied(true);
 
-        await requestIotaFromFaucetV0({
-          host: getFaucetHost('testnet'),
-          recipient: address,
-        });
+        // await requestIotaFromFaucetV0({
+        //   host: getFaucetHost('testnet'),
+        //   recipient: address,
+        // });
 
         toast({
           title: 'Success!',

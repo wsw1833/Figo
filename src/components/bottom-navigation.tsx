@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-export function BottomTabs({ addr }: { addr: string }) {
+export function BottomTabs({ addr }: { addr: string | null }) {
   const pathname = usePathname();
 
   const isMarketPage = pathname.includes('/market');

@@ -1,5 +1,5 @@
 export const Figo_NFT_PKG_ID =
-  '0xc40af83b33fdb494a79cc8ece2c0570b13a12d1f72b20755cf5e4210b8f330b7';
+  '0xa6f9165f0bd6e79661bbdbc80fb3fabb0d3fecc3f9612f71c2d8cbaf021945f4';
 
 export const collection_ID =
-  '0x48ab4930dbe1bda0d3b681be367f2ccac7fc26fbb2ca6cd8904760aebf421eb3';
+  '0x885e9b5eeaa1f655d1412e17656e50a7435ff03ae61718971e97f8480cd71570';

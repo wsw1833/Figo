@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Toaster } from '@/components/ui/toaster';
 
 export default function mainLayout({
   children,
@@ -21,7 +20,6 @@ export default function mainLayout({
         <AvatarFallback>Avatar</AvatarFallback>
       </Avatar>
       {children}
-      <Toaster />
     </div>
   );
 }

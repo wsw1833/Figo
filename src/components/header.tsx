@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LogOut, User } from 'lucide-react';
 import nightly from '@images/nfc.svg';
@@ -28,28 +28,52 @@ import {
   DrawerClose,
   DrawerFooter,
 } from './ui/drawer';
-import {
-  useDisconnectWallet,
-  useSignAndExecuteTransaction,
-  useIotaClient,
-} from '@iota/dapp-kit';
+import { useToast } from '@/hooks/use-toast';
 import { mintParentNFT } from '@/app/actions/mint_parentNFT';
 import { collection_ID } from '@/lib/constant';
+import { getAdapter } from '@/misc/adapter';
 
-export function Header({ addr }: { addr: string }): JSX.Element {
-  const { mutate: disconnect } = useDisconnectWallet();
-  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction();
-  const client = useIotaClient();
+export function Header({ addr }: { addr: string | null }): JSX.Element {
+  const [account, setAccount] = useState<string | null>('');
+  const { toast } = useToast();
 
-  const handleMintParent = () => {
-    mintParentNFT(
-      collection_ID,
-      'Garfield',
-      'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
-      `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
-      signAndExecuteTransaction,
-      client
-    );
+  useEffect(() => {
+    const addr = localStorage.getItem('walletAddress');
+    setAccount(addr);
+  }, []);
+
+  const disconnectHandler = async () => {
+    try {
+      const adapter = await getAdapter();
+      await adapter.disconnect();
+      localStorage.removeItem('walletAddress');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleMintParent = async () => {
+    try {
+      const txid = await mintParentNFT(
+        collection_ID,
+        'Garfield',
+        'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
+        `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`
+      );
+      if (txid) {
+        toast({
+          title: 'NFT Minting Successfully!',
+          description: 'Check the transaction on Iota Testnet Explorer',
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'NFT Minting Failed!',
+        description: 'Failed to mint the NFT',
+        duration: 3000,
+      });
+    }
   };
 
   return (
@@ -117,7 +141,7 @@ export function Header({ addr }: { addr: string }): JSX.Element {
                   href="/"
                   title="Logout"
                   icon={<LogOut className="h-4 w-4" />}
-                  onClick={() => disconnect()}
+                  onClick={disconnectHandler}
                 >
                   Sign out of your account
                 </ListItem>
