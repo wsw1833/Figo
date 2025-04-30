@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       const parent = await ParentNFT.create(body);
       owner = await Owner.findByIdAndUpdate(
         owner._id,
-        { $addToSet: { componentNFTs: parent._id } }, // $addToSet prevents duplicates
+        { $addToSet: { parentNFTs: parent._id } }, // $addToSet prevents duplicates
         { new: true }
       );
     }

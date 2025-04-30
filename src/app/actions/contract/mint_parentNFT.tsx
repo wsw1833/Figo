@@ -4,9 +4,9 @@ import { getAdapter } from '@/misc/adapter';
 
 export async function mintParentNFT(
   collection: any,
-  name: string,
-  description: string,
-  url: string
+  name: string | undefined,
+  description: string | undefined,
+  url: string | undefined
 ) {
   const adapter = await getAdapter();
   const account = await adapter.getAccounts();

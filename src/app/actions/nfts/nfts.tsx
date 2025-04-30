@@ -1,18 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-
-export interface NFTFormData {
-  objectID?: string;
-  name?: string;
-  description?: string;
-  image?: string;
-  component_type?: string | null;
-}
+import { NFTFormData } from '@/lib/utils';
 
 export const createNFT = async (
   formData: NFTFormData,
-  walletAddress: string
+  walletAddress: string | null
 ) => {
   const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000';
   const requestBody = {

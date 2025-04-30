@@ -17,77 +17,23 @@ import {
 } from './ui/sheet';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-
-const itemsData = [
-  {
-    id: 1,
-    title: 'Summer Collection',
-    description: 'Latest summer styles',
-  },
-  {
-    id: 2,
-    title: 'Winter Collection',
-    description: 'Cozy winter wear',
-  },
-  {
-    id: 3,
-    title: 'Spring Collection',
-    description: 'Fresh spring designs',
-  },
-  {
-    id: 4,
-    title: 'Fall Collection',
-    description: 'Autumn fashion essentials',
-  },
-  {
-    id: 5,
-    title: 'Limited Edition',
-    description: 'Exclusive limited items',
-  },
-  {
-    id: 6,
-    title: 'Casual Collection',
-    description: 'Everyday casual wear',
-  },
-  {
-    id: 7,
-    title: 'Formal Collection',
-    description: 'Elegant formal attire',
-  },
-  {
-    id: 8,
-    title: 'Sports Collection',
-    description: 'Athletic performance wear',
-  },
-  {
-    id: 9,
-    title: 'Watches',
-    description: 'Premium timepieces',
-  },
-  {
-    id: 10,
-    title: 'Jewelry',
-    description: 'Elegant accessories',
-  },
-  {
-    id: 11,
-    title: 'Bags',
-    description: 'Stylish handbags and backpacks',
-  },
-  {
-    id: 12,
-    title: 'Sunglasses',
-    description: 'Designer eyewear',
-  },
-];
+import { itemsData } from '@/lib/constant';
+import { mintComponentNFT } from '@/app/actions/contract/mint_componentNFT';
+import { collection_ID } from '@/lib/constant';
+import { useToast } from '@/hooks/use-toast';
+import { createNFT } from '@/app/actions/nfts/nfts';
+import { NFTFormData } from '@/lib/utils';
 
 interface Item {
   id: number;
-  title: string;
+  name: string;
   description: string;
+  imageUrl: string;
+  component_type: string;
+  ipfs: string;
 }
 
-export default function SearchGrid() {
+export default function SearchGrid({ addr }: { addr: string | null }) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -95,7 +41,7 @@ export default function SearchGrid() {
   // Filter items based on search query
   const filteredItems = itemsData.filter(
     (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -115,8 +61,9 @@ export default function SearchGrid() {
         {filteredItems.map((item) => (
           <MagicalCard
             key={item.id}
-            title={item.title}
+            title={item.name}
             description={item.description}
+            image={`https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.imageUrl}`}
             tabs={''}
             onClick={() => {
               setSelectedItem(item);
@@ -130,7 +77,7 @@ export default function SearchGrid() {
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">
           {selectedItem && (
             <>
-              <SheetDisplay item={selectedItem} />
+              <SheetDisplay item={selectedItem} account={addr} />
             </>
           )}
         </SheetContent>
@@ -139,22 +86,57 @@ export default function SearchGrid() {
   );
 }
 
-function SheetDisplay({ item }: { item: Item }) {
-  const [isEquipped, setIsEquipped] = useState(false);
+function SheetDisplay({
+  item,
+  account,
+}: {
+  item: Item;
+  account: string | null;
+}) {
+  const { toast } = useToast();
 
-  const handleClick = () => {
-    const newState = !isEquipped;
-    setIsEquipped(newState);
+  const handleMint = async (item: Item) => {
+    try {
+      await mintComponentNFT(
+        collection_ID,
+        item.name,
+        item.description,
+        item.imageUrl,
+        item.component_type
+      );
+
+      const formData: NFTFormData = {
+        objectID: collection_ID,
+        name: item.name,
+        description: item.description,
+        imageUrl: item.imageUrl,
+        component_type: item.component_type,
+      };
+      const result = await createNFT(formData, account);
+      if (result) {
+        toast({
+          title: 'NFT Minting Successfully!',
+          description: 'Check the transaction on Iota Testnet Explorer',
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'NFT Minting Failed!',
+        description: 'Failed to mint the NFT',
+        duration: 3000,
+      });
+    }
   };
 
   return (
     <>
       <SheetHeader>
         <div className="text-xs text-muted-foreground font-medium flex flex-row relative items-start gap-2 w-full h-fit">
-          {item.title}
+          Molly Equipment 1.0
         </div>
         <SheetTitle className="text-xl font-bold flex relative items-start">
-          {item.title}
+          {item.name}
         </SheetTitle>
         <SheetDescription className=" gap-2 flex flex-row w-max items-center justify-center">
           <Badge
@@ -168,11 +150,18 @@ function SheetDisplay({ item }: { item: Item }) {
             />
             Iota
           </Badge>
-          Token #1234
         </SheetDescription>
       </SheetHeader>
       <div className="py-6">
-        <div className="h-60 w-full bg-gradient-to-br from-blue-400 to-teal-500 rounded-lg mb-4"></div>
+        <div className="w-full h-[18rem] flex flex-col items-center justify-center">
+          <Image
+            src={`https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.imageUrl}`}
+            alt="parentNFT"
+            width={150}
+            height={150}
+            className="w-max h-max"
+          />
+        </div>
         <h3 className="font-medium text-lg">Asset Description</h3>
         <p className="text-base mb-4">{item.description}</p>
         <div className="space-y-4"></div>
@@ -181,17 +170,31 @@ function SheetDisplay({ item }: { item: Item }) {
           variant="outline"
           className="p-1 w-fit border-2 border-[#4C52E2] text-[#4C52E2] font-medium"
         >
-          Weapon
+          {item.component_type}
         </Badge>
       </div>
       <SheetFooter className="w-full">
-        <Button className="w-full bg-[#4C52E2] hover:bg-[#3733CB]">
+        <Button
+          className="w-full bg-[#4C52E2] hover:bg-[#3733CB]"
+          onClick={() =>
+            window.open(
+              `https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.ipfs}`,
+              '_blank'
+            )
+          }
+        >
           Inspect IPFS on Pinata{' '}
           <Image
             src={pinata || '/placeholder.svg'}
             alt="pinata IPFS"
             className="w-5 h-5"
           />
+        </Button>
+        <Button
+          className="w-full bg-[#4CABFFFF] hover:bg-[#0496ff]"
+          onClick={() => handleMint(item)}
+        >
+          Mint Component
         </Button>
       </SheetFooter>
     </>

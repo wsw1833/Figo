@@ -11,3 +11,11 @@ export const formatAddress = (addr: string) => {
   }
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 };
+
+export interface NFTFormData {
+  objectID?: string;
+  name?: string | undefined;
+  description?: string | undefined;
+  imageUrl?: string | undefined;
+  component_type?: string | undefined;
+}

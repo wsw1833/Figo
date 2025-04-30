@@ -33,6 +33,10 @@ interface parentNFTItem {
   name: string;
   description: string;
   image_url: string;
+  component_type?: string;
+  ipfs: string;
+  equipped_on?: string;
+  equipped_components?: string[];
 }
 
 interface componentNFTItem {
@@ -40,6 +44,10 @@ interface componentNFTItem {
   name: string;
   description: string;
   image_url: string;
+  component_type?: string;
+  ipfs: string;
+  equipped_on?: string;
+  equipped_components?: string[];
 }
 
 type Item = parentNFTItem | componentNFTItem;
@@ -147,7 +155,10 @@ export default function TabsWithSearchGrid({
               {activeTab === 'collections' ? (
                 <CollectionSheetContent item={selectedItem} />
               ) : (
-                <AccessorySheetContent item={selectedItem} />
+                <AccessorySheetContent
+                  item={selectedItem}
+                  parent={filteredParentNFTs}
+                />
               )}
             </>
           )}
@@ -162,7 +173,7 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
     <>
       <SheetHeader>
         <div className="text-xs text-muted-foreground font-medium flex flex-row relative items-start gap-2 w-full h-fit">
-          {item.name}
+          Molly
         </div>
         <SheetTitle className="text-xl font-bold flex relative items-start">
           {item.name}
@@ -175,7 +186,7 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
             <Image src={Iota} alt="iota" className="w-4 h-4" />
             Iota
           </Badge>
-          Token #1234
+          {item.objectID}
         </SheetDescription>
       </SheetHeader>
       <div className="py-6">
@@ -207,11 +218,27 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
         </div>
       </div>
       <SheetFooter className="w-full gap-2">
-        <Button className="w-full bg-[#4C52E2] hover:bg-[#3733CB]">
+        <Button
+          className="w-full bg-[#4C52E2] hover:bg-[#3733CB]"
+          onClick={() =>
+            window.open(
+              `https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.ipfs}`,
+              '_blank'
+            )
+          }
+        >
           Inspect IPFS on Pinata{' '}
           <Image src={pinata} alt="pinata IPFS" className="w-5 h-5" />
         </Button>
-        <Button className="w-full bg-[#2D2D2DFF] hover:bg-[#0A0B12] text-[#F7F7F7]">
+        <Button
+          className="w-full bg-[#2D2D2DFF] hover:bg-[#0A0B12] text-[#F7F7F7]"
+          onClick={() =>
+            window.open(
+              `https://iotascan.com/testnet/object/${item.objectID}`,
+              '_blank'
+            )
+          }
+        >
           Tx Details on Iota{' '}
           <Image src={IotaExplorer} alt="Iota explorer" className="w-5 h-5" />
         </Button>
@@ -221,7 +248,13 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
 }
 
 // Accessory Sheet Content
-function AccessorySheetContent({ item }: { item: componentNFTItem }) {
+function AccessorySheetContent({
+  item,
+  parent,
+}: {
+  item: componentNFTItem;
+  parent: parentNFTItem[];
+}) {
   const [isEquipped, setIsEquipped] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -234,18 +267,25 @@ function AccessorySheetContent({ item }: { item: componentNFTItem }) {
     }
   };
 
-  const handleCardSelect = (card: componentNFTItem) => {
-    // Handle the card selection logic here
-    console.log('Selected card:', card);
+  const handleCardSelect = ({
+    parent,
+    component,
+  }: {
+    parent: parentNFTItem;
+    component: string;
+  }) => {
+    // Handle the card selection logic here and equip onto it
+    if (parent.equipped_components?.includes(component))
+      // if includes then unequip, else equip (parent.objectID, component.objectID);
 
-    // Close the dialog after selection
-    setIsDialogOpen(false);
+      // Close the dialog after selection
+      setIsDialogOpen(false);
   };
   return (
     <>
       <SheetHeader>
         <div className="text-xs text-muted-foreground font-medium flex flex-row relative items-start gap-2 w-full h-fit">
-          {item.name}
+          Molly Equipment 1.0
         </div>
         <SheetTitle className="text-xl font-bold flex relative items-start">
           {item.name}
@@ -258,7 +298,6 @@ function AccessorySheetContent({ item }: { item: componentNFTItem }) {
             <Image src={Iota} alt="iota" className="w-4 h-4" />
             Iota
           </Badge>
-          Token #1234
         </SheetDescription>
       </SheetHeader>
       <div className="py-6">
@@ -271,32 +310,48 @@ function AccessorySheetContent({ item }: { item: componentNFTItem }) {
           variant="outline"
           className="p-1 w-fit border-2 border-[#4C52E2] text-[#4C52E2] font-medium"
         >
-          Weapon
+          {item.component_type}
         </Badge>
       </div>
       <Button
         className={`${
-          isEquipped
+          item.equipped_on
             ? 'w-full mb-2 bg-[#dd2d4a] hover:bg-[#ca0101]'
             : 'w-full mb-2 bg-[#4CABFFFF] hover:bg-[#0496ff]'
         }`}
         onClick={handleClick}
       >
-        {isEquipped ? 'Unequip' : 'Equip'}
+        {item.equipped_on ? 'Unequip' : 'Equip'}
       </Button>
-      {isEquipped ? (
+      {item.equipped_on ? (
         <SheetDescription className="font-light text-[#737373] mb-4">
-          Equipped at Token #1234
+          Equipped at Parent {item.objectID}
         </SheetDescription>
       ) : (
         <></>
       )}
       <SheetFooter className="w-full">
-        <Button className="w-full bg-[#4C52E2] hover:bg-[#3733CB]">
+        <Button
+          className="w-full bg-[#4C52E2] hover:bg-[#3733CB]"
+          onClick={() =>
+            window.open(
+              `https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.ipfs}`,
+              '_blank'
+            )
+          }
+        >
           Inspect IPFS on Pinata{' '}
           <Image src={pinata} alt="pinata IPFS" className="w-5 h-5" />
         </Button>
-        <Button className="w-full bg-[#2D2D2DFF] hover:bg-[#0A0B12] text-[#F7F7F7]">
+        <Button
+          className="w-full bg-[#2D2D2DFF] hover:bg-[#0A0B12] text-[#F7F7F7]"
+          onClick={() =>
+            window.open(
+              `https://iotascan.com/testnet/object/${item.objectID}`,
+              '_blank'
+            )
+          }
+        >
           Tx Details on Iota{' '}
           <Image src={IotaExplorer} alt="Iota explorer" className="w-5 h-5" />
         </Button>
@@ -309,15 +364,18 @@ function AccessorySheetContent({ item }: { item: componentNFTItem }) {
             <DialogClose className="rounded-full hover:bg-muted p-2"></DialogClose>
           </DialogHeader>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mt-4">
-            {/* {magicalCards.map((card) => (
+            {parent.map((card) => (
               <MagicalCard
                 key={card.objectID}
                 title={card.name}
+                image={`https://green-elderly-sheep-310.mypinata.cloud/ipfs/${card.image_url}`}
                 description={card.description}
                 tabs="accessories"
-                onClick={() => handleCardSelect(card)}
+                onClick={() =>
+                  handleCardSelect({ parent: card, component: item.objectID })
+                }
               />
-            ))} */}
+            ))}
           </div>
         </DialogContent>
       </Dialog>

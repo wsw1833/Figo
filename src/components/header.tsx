@@ -32,9 +32,12 @@ import { useToast } from '@/hooks/use-toast';
 import { mintParentNFT } from '@/app/actions/contract/mint_parentNFT';
 import { collection_ID } from '@/lib/constant';
 import { getAdapter } from '@/misc/adapter';
+import { createNFT } from '@/app/actions/nfts/nfts';
+import { NFTFormData } from '@/lib/utils';
 
 export function Header({ addr }: { addr: string | null }): JSX.Element {
   const [account, setAccount] = useState<string | null>('');
+  const [scanData, setScanData] = useState<NFTFormData | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,15 +55,33 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
     }
   };
 
+  const mockScanData: NFTFormData = {
+    objectID: collection_ID,
+    name: 'Garfield',
+    description:
+      'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
+    imageUrl: `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
+  };
+
+  const handleScan = () => {
+    // In real app, this would come from NFC reader
+    setScanData(mockScanData);
+    handleMintParent();
+  };
+
   const handleMintParent = async () => {
+    if (!scanData || !account) return;
+
     try {
-      const txid = await mintParentNFT(
+      await mintParentNFT(
         collection_ID,
-        'Garfield',
-        'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
-        `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`
+        scanData.name,
+        scanData.description,
+        scanData.imageUrl
       );
-      if (txid) {
+      const result = await createNFT(scanData, account);
+
+      if (result) {
         toast({
           title: 'NFT Minting Successfully!',
           description: 'Check the transaction on Iota Testnet Explorer',
@@ -87,7 +108,7 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
               <DrawerTrigger asChild>
                 <button
                   className={`${navigationMenuTriggerStyle()} gap-1 md:text-lg flex items-center justify-center`}
-                  onClick={handleMintParent}
+                  onClick={handleScan}
                 >
                   Scan
                   <Image src={nightly} alt="logo" className="w-6 h-6" />
