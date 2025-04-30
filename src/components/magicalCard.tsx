@@ -15,11 +15,13 @@ import Image from 'next/image';
 export default function MagicalCard({
   title,
   description,
+  image,
   onClick,
   tabs,
 }: {
   title: string;
   description: string;
+  image: string;
   onClick?: () => void;
   tabs: string;
 }) {
@@ -27,9 +29,9 @@ export default function MagicalCard({
     <Card className="overflow-hidden group md:mx-4" onClick={onClick}>
       <MagicCard>
         {tabs === 'collections' ? (
-          <div className="h-60 bg-gradient-to-br from-purple-400 to-pink-500 "></div>
+          <Image src={image} alt="parentNFT"></Image>
         ) : (
-          <div className="h-60 w-full bg-gradient-to-br from-blue-400 to-teal-500 rounded-lg"></div>
+          <Image src={image} alt="componentNFT"></Image>
         )}
 
         <CardHeader className="p-4">

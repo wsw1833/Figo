@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { cache } from 'react';
 
-// Load environment variables from .env file
 dotenv.config();
 
 // MongoDB connection URI from environment variables
-const MONGODB_URI =
-  process.env.MONGODB_URI || 'mongodb://localhost:27017/myProject';
+const MONGODB_URI = process.env.MONGODB_URI || 'undefined';
+
+if (MONGODB_URI === 'undefined') {
+  throw new Error('Please define the MONGODB_URI environment variable');
+}
 
 // Connection options
 const options: mongoose.ConnectOptions = {
@@ -17,7 +20,6 @@ class DatabaseConnection {
   private static instance: DatabaseConnection;
 
   private constructor() {
-    // Set up mongoose connection events
     mongoose.connection.on('connected', () => {
       console.log('MongoDB connection established successfully');
     });
@@ -70,4 +72,41 @@ class DatabaseConnection {
   }
 }
 
-export default DatabaseConnection;
+interface ConnectionCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+// Use a global variable to track the connection across hot reloads in development
+let globalConnectionCache: ConnectionCache = (global as any)
+  .mongooseConnection || {
+  conn: null,
+  promise: null,
+};
+
+// Update the global variable in development to avoid multiple connections
+if (process.env.NODE_ENV !== 'production') {
+  (global as any).mongooseConnection = globalConnectionCache;
+}
+
+const connectDB = cache(async (): Promise<typeof mongoose> => {
+  if (globalConnectionCache.conn) {
+    return globalConnectionCache.conn;
+  }
+
+  if (!globalConnectionCache.promise) {
+    const dbConnection = DatabaseConnection.getInstance();
+    globalConnectionCache.promise = dbConnection.connect();
+  }
+
+  try {
+    globalConnectionCache.conn = await globalConnectionCache.promise;
+  } catch (error) {
+    globalConnectionCache.promise = null;
+    throw error;
+  }
+
+  return globalConnectionCache.conn;
+});
+
+export default connectDB;

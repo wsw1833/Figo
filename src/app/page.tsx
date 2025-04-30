@@ -8,6 +8,7 @@ import { MarqueeDemo } from '@/components/marquehorizon';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { getAdapter } from '@/misc/adapter';
+import { createOwner } from './actions/owner/owner';
 
 export default function Home() {
   const router = useRouter();
@@ -39,8 +40,10 @@ export default function Home() {
       await adapter.connect();
       const account = await adapter.getAccounts();
       if (account[0]) {
-        router.push(`/${account[0].address}/main`);
-        localStorage.setItem('walletAddress', account[0].address);
+        const address = account[0].address;
+        router.push(`/${address}/main`);
+        localStorage.setItem('walletAddress', address);
+        createOwner(address);
       }
     } catch (error) {
       // If error, disconnect ignore error

@@ -28,64 +28,51 @@ import {
   DialogTitle,
 } from './ui/dialog';
 
-// Sample data for collections and accessories
-const collectionsData = [
-  { id: 1, title: 'Summer Collection', description: 'Latest summer styles' },
-  { id: 2, title: 'Winter Collection', description: 'Cozy winter wear' },
-  { id: 3, title: 'Spring Collection', description: 'Fresh spring designs' },
-  { id: 4, title: 'Fall Collection', description: 'Autumn fashion essentials' },
-  { id: 5, title: 'Limited Edition', description: 'Exclusive limited items' },
-  { id: 6, title: 'Casual Collection', description: 'Everyday casual wear' },
-  { id: 7, title: 'Formal Collection', description: 'Elegant formal attire' },
-  {
-    id: 8,
-    title: 'Sports Collection',
-    description: 'Athletic performance wear',
-  },
-];
-
-const accessoriesData = [
-  { id: 1, title: 'Watches', description: 'Premium timepieces' },
-  { id: 2, title: 'Jewelry', description: 'Elegant accessories' },
-  { id: 3, title: 'Bags', description: 'Stylish handbags and backpacks' },
-  { id: 4, title: 'Sunglasses', description: 'Designer eyewear' },
-  { id: 5, title: 'Belts', description: 'Quality leather belts' },
-  { id: 6, title: 'Hats', description: 'Trendy headwear' },
-];
-
-interface CollectionItem {
-  id: number;
-  title: string;
+interface parentNFTItem {
+  objectID: string;
+  name: string;
   description: string;
+  image_url: string;
 }
 
-interface AccessoryItem {
-  id: number;
-  title: string;
+interface componentNFTItem {
+  objectID: string;
+  name: string;
   description: string;
+  image_url: string;
 }
 
-type Item = CollectionItem | AccessoryItem;
+type Item = parentNFTItem | componentNFTItem;
 
-export default function TabsWithSearchGrid() {
+export default function TabsWithSearchGrid({
+  ParentNFT,
+  ComponentNFT,
+}: {
+  ParentNFT: parentNFTItem[];
+  ComponentNFT: componentNFTItem[];
+}) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [activeTab, setActiveTab] = useState<string>('collections');
 
-  // Filter collections based on search query
-  const filteredCollections = collectionsData.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter parentNFT based on search query
+  const filteredParentNFTs = Array.isArray(ParentNFT)
+    ? ParentNFT.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
-  // Filter accessories based on search query
-  const filteredAccessories = accessoriesData.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter componentNFT based on search query
+  const filteredComponentNFTs = Array.isArray(ComponentNFT)
+    ? ComponentNFT.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   return (
     <Tabs
@@ -117,14 +104,15 @@ export default function TabsWithSearchGrid() {
         className="w-full flex items-center justify-center"
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-4 gap-2 w-full">
-          {filteredCollections.map((collection) => (
+          {filteredParentNFTs.map((parent) => (
             <MagicalCard
-              key={collection.id}
-              title={collection.title}
-              description={collection.description}
+              key={parent.objectID}
+              title={parent.name}
+              description={parent.description}
+              image={parent.image_url}
               tabs={activeTab}
               onClick={() => {
-                setSelectedItem(collection);
+                setSelectedItem(parent);
                 setIsSheetOpen(true);
               }}
             />
@@ -137,14 +125,15 @@ export default function TabsWithSearchGrid() {
         className="w-full flex items-center justify-center"
       >
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-4 gap-2 w-full">
-          {filteredAccessories.map((accessory) => (
+          {filteredComponentNFTs.map((component) => (
             <MagicalCard
-              key={accessory.id}
-              title={accessory.title}
-              description={accessory.description}
+              key={component.objectID}
+              title={component.name}
+              description={component.description}
+              image={component.image_url}
               tabs={activeTab}
               onClick={() => {
-                setSelectedItem(accessory);
+                setSelectedItem(component);
                 setIsSheetOpen(true);
               }}
             />
@@ -168,15 +157,15 @@ export default function TabsWithSearchGrid() {
   );
 }
 
-function CollectionSheetContent({ item }: { item: CollectionItem }) {
+function CollectionSheetContent({ item }: { item: parentNFTItem }) {
   return (
     <>
       <SheetHeader>
         <div className="text-xs text-muted-foreground font-medium flex flex-row relative items-start gap-2 w-full h-fit">
-          {item.title}
+          {item.name}
         </div>
         <SheetTitle className="text-xl font-bold flex relative items-start">
-          {item.title}
+          {item.name}
         </SheetTitle>
         <SheetDescription className=" gap-2 flex flex-row w-max items-center justify-center">
           <Badge
@@ -232,18 +221,9 @@ function CollectionSheetContent({ item }: { item: CollectionItem }) {
 }
 
 // Accessory Sheet Content
-function AccessorySheetContent({ item }: { item: AccessoryItem }) {
+function AccessorySheetContent({ item }: { item: componentNFTItem }) {
   const [isEquipped, setIsEquipped] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [magicalCards, setMagicalCards] = useState<AccessoryItem[]>([
-    { id: 1, title: 'Magic Sword', description: 'A powerful sword' },
-    { id: 2, title: 'Magic Shield', description: 'A sturdy shield' },
-    { id: 3, title: 'Magic Helmet', description: 'A protective helmet' },
-    { id: 4, title: 'Magic Boots', description: 'Fast running boots' },
-    { id: 5, title: 'Magic Gloves', description: 'Powerful gloves' },
-    { id: 6, title: 'Magic Ring', description: 'A mysterious ring' },
-  ]);
 
   const handleClick = () => {
     const newState = !isEquipped;
@@ -254,7 +234,7 @@ function AccessorySheetContent({ item }: { item: AccessoryItem }) {
     }
   };
 
-  const handleCardSelect = (card: AccessoryItem) => {
+  const handleCardSelect = (card: componentNFTItem) => {
     // Handle the card selection logic here
     console.log('Selected card:', card);
 
@@ -265,10 +245,10 @@ function AccessorySheetContent({ item }: { item: AccessoryItem }) {
     <>
       <SheetHeader>
         <div className="text-xs text-muted-foreground font-medium flex flex-row relative items-start gap-2 w-full h-fit">
-          {item.title}
+          {item.name}
         </div>
         <SheetTitle className="text-xl font-bold flex relative items-start">
-          {item.title}
+          {item.name}
         </SheetTitle>
         <SheetDescription className=" gap-2 flex flex-row w-max items-center justify-center">
           <Badge
@@ -329,15 +309,15 @@ function AccessorySheetContent({ item }: { item: AccessoryItem }) {
             <DialogClose className="rounded-full hover:bg-muted p-2"></DialogClose>
           </DialogHeader>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mt-4">
-            {magicalCards.map((card) => (
+            {/* {magicalCards.map((card) => (
               <MagicalCard
-                key={card.id}
-                title={card.title}
+                key={card.objectID}
+                title={card.name}
                 description={card.description}
                 tabs="accessories"
                 onClick={() => handleCardSelect(card)}
               />
-            ))}
+            ))} */}
           </div>
         </DialogContent>
       </Dialog>

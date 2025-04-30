@@ -29,7 +29,7 @@ import {
   DrawerFooter,
 } from './ui/drawer';
 import { useToast } from '@/hooks/use-toast';
-import { mintParentNFT } from '@/app/actions/mint_parentNFT';
+import { mintParentNFT } from '@/app/actions/contract/mint_parentNFT';
 import { collection_ID } from '@/lib/constant';
 import { getAdapter } from '@/misc/adapter';
 
