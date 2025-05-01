@@ -23,12 +23,12 @@ import { collection_ID } from '@/lib/constant';
 import { useToast } from '@/hooks/use-toast';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
-
+import { useIotaClient } from '@iota/dapp-kit';
 interface Item {
   id: number;
   name: string;
   description: string;
-  imageUrl: string;
+  image_url: string;
   component_type: string;
   ipfs: string;
 }
@@ -63,7 +63,7 @@ export default function SearchGrid({ addr }: { addr: string | null }) {
             key={item.id}
             title={item.name}
             description={item.description}
-            image={`https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.imageUrl}`}
+            image={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.image_url}`}
             tabs={''}
             onClick={() => {
               setSelectedItem(item);
@@ -94,23 +94,26 @@ function SheetDisplay({
   account: string | null;
 }) {
   const { toast } = useToast();
+  const client = useIotaClient();
 
   const handleMint = async (item: Item) => {
     try {
-      await mintComponentNFT(
+      const createdObjectId = await mintComponentNFT(
         collection_ID,
         item.name,
         item.description,
-        item.imageUrl,
-        item.component_type
+        item.image_url,
+        item.component_type,
+        client
       );
 
       const formData: NFTFormData = {
-        objectID: collection_ID,
+        objectID: createdObjectId?.toString(),
         name: item.name,
         description: item.description,
-        imageUrl: item.imageUrl,
+        image_url: item.image_url,
         component_type: item.component_type,
+        ipfs: item.ipfs,
       };
       const result = await createNFT(formData, account);
       if (result) {
@@ -155,8 +158,8 @@ function SheetDisplay({
       <div className="py-6">
         <div className="w-full h-[18rem] flex flex-col items-center justify-center">
           <Image
-            src={`https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.imageUrl}`}
-            alt="parentNFT"
+            src={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.image_url}`}
+            alt="componentNFT"
             width={150}
             height={150}
             className="w-max h-max"
@@ -178,7 +181,7 @@ function SheetDisplay({
           className="w-full bg-[#4C52E2] hover:bg-[#3733CB]"
           onClick={() =>
             window.open(
-              `https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.ipfs}`,
+              `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.ipfs}`,
               '_blank'
             )
           }

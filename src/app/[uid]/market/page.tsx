@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { SparklesText } from '@/components/magicui/sparkles-text';
 import SearchGrid from '@/components/market-search-grid';
 
-const market = () => {
+const Market = () => {
   const [account, setAccount] = useState<string>('');
 
   useEffect(() => {
@@ -24,4 +24,4 @@ const market = () => {
   );
 };
 
-export default market;
+export default Market;

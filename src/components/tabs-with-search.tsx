@@ -28,18 +28,16 @@ import {
   DialogTitle,
 } from './ui/dialog';
 
-interface parentNFTItem {
+export interface parentNFTItem {
   objectID: string;
   name: string;
   description: string;
   image_url: string;
-  component_type?: string;
   ipfs: string;
-  equipped_on?: string;
-  equipped_components?: string[];
+  equipped_components?: [componentNFTItem];
 }
 
-interface componentNFTItem {
+export interface componentNFTItem {
   objectID: string;
   name: string;
   description: string;
@@ -47,7 +45,6 @@ interface componentNFTItem {
   component_type?: string;
   ipfs: string;
   equipped_on?: string;
-  equipped_components?: string[];
 }
 
 type Item = parentNFTItem | componentNFTItem;
@@ -56,8 +53,8 @@ export default function TabsWithSearchGrid({
   ParentNFT,
   ComponentNFT,
 }: {
-  ParentNFT: parentNFTItem[];
-  ComponentNFT: componentNFTItem[];
+  ParentNFT: [parentNFTItem];
+  ComponentNFT: [componentNFTItem];
 }) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSheetOpen, setIsSheetOpen] = useState<boolean>(false);
@@ -117,7 +114,7 @@ export default function TabsWithSearchGrid({
               key={parent.objectID}
               title={parent.name}
               description={parent.description}
-              image={parent.image_url}
+              image={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${parent.image_url}`}
               tabs={activeTab}
               onClick={() => {
                 setSelectedItem(parent);
@@ -138,7 +135,7 @@ export default function TabsWithSearchGrid({
               key={component.objectID}
               title={component.name}
               description={component.description}
-              image={component.image_url}
+              image={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${component.image_url}`}
               tabs={activeTab}
               onClick={() => {
                 setSelectedItem(component);
@@ -190,31 +187,29 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
         </SheetDescription>
       </SheetHeader>
       <div className="py-6">
-        <div className="h-60 w-full bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg mb-4"></div>
+        <div className="w-full h-[18rem] flex flex-col items-center justify-center">
+          <Image
+            src={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.image_url}`}
+            alt="parentNFT"
+            width={150}
+            height={150}
+            className="w-max h-max"
+          />
+        </div>
         <h3 className="font-medium text-lg">Asset Description</h3>
         <p className="text-base mb-4 text-muted-foreground">
           {item.description}
         </p>
         <h3 className="font-medium text-lg my-2">NFT Inventory</h3>
         <div className="space-y-4">
-          <InventoryCard
-            imageSrc="/placeholder.svg?height=40&width=40"
-            name="John Doe"
-            title="Software Engineer"
-            description="Frontend developer specializing in React and TypeScript"
-          />
-          <InventoryCard
-            imageSrc="/placeholder.svg?height=40&width=40"
-            name="Jane Smith"
-            title="Product Designer"
-            description="Creating beautiful and functional user interfaces"
-          />
-          <InventoryCard
-            imageSrc="/placeholder.svg?height=40&width=40"
-            name="Alex Johnson"
-            title="Project Manager"
-            description="Experienced in leading cross-functional teams and delivering complex projects on time and within budget"
-          />
+          {item.equipped_components?.map((component) => (
+            <InventoryCard
+              imageSrc={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${component.image_url}`}
+              name={component.name}
+              title="Molly Equipment 1.0"
+              description={component.description}
+            />
+          ))}
         </div>
       </div>
       <SheetFooter className="w-full gap-2">
@@ -222,7 +217,7 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
           className="w-full bg-[#4C52E2] hover:bg-[#3733CB]"
           onClick={() =>
             window.open(
-              `https://green-elderly-sheep-310.mypinata.cloud/ipfs/${item.ipfs}`,
+              `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.ipfs}`,
               '_blank'
             )
           }
@@ -271,15 +266,19 @@ function AccessorySheetContent({
     parent,
     component,
   }: {
-    parent: parentNFTItem;
+    parent: [componentNFTItem] | undefined;
     component: string;
   }) => {
     // Handle the card selection logic here and equip onto it
-    if (parent.equipped_components?.includes(component))
-      // if includes then unequip, else equip (parent.objectID, component.objectID);
+    if (parent) {
+      const isObjectIDPresent = parent.some((p) => p.objectID === component);
+      if (isObjectIDPresent) {
+      }
+    }
+    // if includes then unequip, else equip (parent.objectID, component.objectID);
 
-      // Close the dialog after selection
-      setIsDialogOpen(false);
+    // Close the dialog after selection
+    setIsDialogOpen(false);
   };
   return (
     <>
@@ -372,7 +371,10 @@ function AccessorySheetContent({
                 description={card.description}
                 tabs="accessories"
                 onClick={() =>
-                  handleCardSelect({ parent: card, component: item.objectID })
+                  handleCardSelect({
+                    parent: card.equipped_components,
+                    component: item.objectID,
+                  })
                 }
               />
             ))}

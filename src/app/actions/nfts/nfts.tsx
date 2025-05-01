@@ -12,7 +12,7 @@ export const createNFT = async (
     walletAddress,
     ...formData,
   };
-  const response = await fetch(`${baseUrl}/api/owner`, {
+  const response = await fetch(`${baseUrl}/api/nfts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestBody),

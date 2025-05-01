@@ -16,6 +16,7 @@ export interface NFTFormData {
   objectID?: string;
   name?: string | undefined;
   description?: string | undefined;
-  imageUrl?: string | undefined;
+  image_url?: string | undefined;
   component_type?: string | undefined;
+  ipfs?: string;
 }

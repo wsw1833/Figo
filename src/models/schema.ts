@@ -28,6 +28,10 @@ const ComponentNFTSchema = new mongoose.Schema({
     ref: 'ParentNFT',
     default: null,
   },
+  ipfs: {
+    type: String,
+    required: true,
+  },
 });
 
 // Schema for Parent NFTs
@@ -35,7 +39,7 @@ const ParentNFTSchema = new mongoose.Schema({
   objectID: {
     type: String,
     required: true,
-    unqiue: true,
+    unique: true,
   },
   name: {
     type: String,
@@ -55,6 +59,10 @@ const ParentNFTSchema = new mongoose.Schema({
       ref: 'ComponentNFT',
     },
   ],
+  ipfs: {
+    type: String,
+    required: true,
+  },
 });
 
 // Schema for Owner
@@ -64,14 +72,18 @@ const OwnerSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  parentNFTs: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ParentNFT',
-  },
-  componentNFTs: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ComponentNFT',
-  },
+  parentNFTs: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ParentNFT',
+    },
+  ],
+  componentNFTs: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ComponentNFT',
+    },
+  ],
 });
 
 // Create models if they don't exist

@@ -1,4 +1,11 @@
 'use server';
+import { parentNFTItem, componentNFTItem } from '@/components/tabs-with-search';
+
+interface OwnerData {
+  walletAddress: string;
+  parentNFTs: parentNFTItem[];
+  componentNFTs: componentNFTItem[];
+}
 
 export const createOwner = async (walletAddress: string) => {
   try {
@@ -16,7 +23,12 @@ export const createOwner = async (walletAddress: string) => {
       );
     }
     const result = await response.json();
-    return { success: true, result: result.data, status: result.status || 200 };
+
+    return {
+      success: true,
+      result: result.data,
+      status: result.status || 200,
+    };
   } catch (err) {
     return {
       success: false,
@@ -32,7 +44,10 @@ export const fetchOwner = async (walletAddress: string) => {
       process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000';
     const encodedAddress = encodeURIComponent(walletAddress);
     const response = await fetch(
-      `${baseUrl}/api/owner?walletAddress=${encodedAddress}`
+      `${baseUrl}/api/owner?walletAddress=${encodedAddress}`,
+      {
+        cache: 'no-cache',
+      }
     );
     if (!response.ok) {
       const errorData = await response.json();

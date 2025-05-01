@@ -34,11 +34,13 @@ import { collection_ID } from '@/lib/constant';
 import { getAdapter } from '@/misc/adapter';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
+import { useIotaClient } from '@iota/dapp-kit';
 
 export function Header({ addr }: { addr: string | null }): JSX.Element {
   const [account, setAccount] = useState<string | null>('');
   const [scanData, setScanData] = useState<NFTFormData | null>(null);
   const { toast } = useToast();
+  const client = useIotaClient();
 
   useEffect(() => {
     const addr = localStorage.getItem('walletAddress');
@@ -56,11 +58,11 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
   };
 
   const mockScanData: NFTFormData = {
-    objectID: collection_ID,
     name: 'Garfield',
     description:
       'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
-    imageUrl: `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
+    image_url: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
+    ipfs: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
   };
 
   const handleScan = () => {
@@ -73,13 +75,23 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
     if (!scanData || !account) return;
 
     try {
-      await mintParentNFT(
+      const createdObjectId = await mintParentNFT(
         collection_ID,
         scanData.name,
         scanData.description,
-        scanData.imageUrl
+        scanData.image_url,
+        client
       );
-      const result = await createNFT(scanData, account);
+
+      const formData: NFTFormData = {
+        objectID: createdObjectId?.toString(),
+        name: scanData.name,
+        description: scanData.description,
+        image_url: scanData.image_url,
+        ipfs: scanData.ipfs,
+      };
+
+      const result = await createNFT(formData, account);
 
       if (result) {
         toast({

@@ -78,7 +78,7 @@ interface ConnectionCache {
 }
 
 // Use a global variable to track the connection across hot reloads in development
-let globalConnectionCache: ConnectionCache = (global as any)
+const globalConnectionCache: ConnectionCache = (global as any)
   .mongooseConnection || {
   conn: null,
   promise: null,

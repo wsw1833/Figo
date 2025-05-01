@@ -6,7 +6,8 @@ export async function mintParentNFT(
   collection: any,
   name: string | undefined,
   description: string | undefined,
-  url: string | undefined
+  url: string | undefined,
+  client: any
 ) {
   const adapter = await getAdapter();
   const account = await adapter.getAccounts();
@@ -32,5 +33,20 @@ export async function mintParentNFT(
     chain: 'iota:testnet',
     account: account[0],
   });
-  return txid;
+
+  const digest = txid.digest;
+
+  const res = await client.getTransactionBlock({
+    digest,
+    options: {
+      showEffects: true,
+      showObjectChanges: true,
+    },
+  });
+
+  const createdObjects = res.objectChanges?.filter(
+    (change: any) => change.type === 'created'
+  );
+  const createdObjectIds = createdObjects?.map((obj: any) => obj.objectId);
+  return createdObjectIds;
 }

@@ -22,9 +22,11 @@ export async function GET(request: NextRequest) {
     const existingOwner = await Owner.findOne({
       walletAddress: walletAddress,
     })
-      .populate('parentNFTs')
-      .populate('componentNFTs')
-      .lean();
+      .populate({
+        path: 'parentNFTs',
+        populate: { path: 'equipped_components' },
+      })
+      .populate('componentNFTs');
 
     if (!existingOwner) {
       return NextResponse.json(
