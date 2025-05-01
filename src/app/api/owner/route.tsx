@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
         path: 'parentNFTs',
         populate: { path: 'equipped_components' },
       })
-      .populate('componentNFTs');
+      .populate({
+        path: 'componentNFTs',
+        populate: { path: 'equipped_on' },
+      });
 
     if (!existingOwner) {
       return NextResponse.json(

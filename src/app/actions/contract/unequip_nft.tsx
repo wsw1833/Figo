@@ -2,7 +2,7 @@ import { Transaction } from '@iota/iota-sdk/transactions';
 import { Figo_NFT_PKG_ID } from '@/lib/constant';
 import { getAdapter } from '@/misc/adapter';
 
-export async function equipNFT(parent: string, component: string) {
+export async function unequipNFT(parent: string, component: string) {
   const adapter = await getAdapter();
   const account = await adapter.getAccounts();
   const txb = () => {

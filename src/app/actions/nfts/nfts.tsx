@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { NFTFormData } from '@/lib/utils';
+import { redirect } from 'next/navigation';
 
 export const createNFT = async (
   formData: NFTFormData,
@@ -20,7 +21,7 @@ export const createNFT = async (
 
   const result = await response.json();
 
-  revalidatePath(`${walletAddress}/main`);
+  revalidatePath('/', 'layout');
 
   return {
     success: true,

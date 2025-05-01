@@ -33,24 +33,24 @@ export default function MagicalCard({
             <Image
               src={image}
               alt="parentNFT"
-              width={50}
-              height={50}
+              width={100}
+              height={100}
               className="w-max h-max"
             />
           ) : tabs === 'accessories' ? (
             <Image
               src={image}
               alt="componentNFT"
-              width={50}
-              height={50}
+              width={60}
+              height={60}
               className="w-max h-max"
             />
           ) : (
             <Image
               src={image}
               alt="marketplaceNFT"
-              width={50}
-              height={50}
+              width={60}
+              height={60}
               className="w-max h-max"
             />
           )}

@@ -1,12 +1,3 @@
-/*
-/// Module: figo_nft
-module figo_nft::figo_nft;
-*/
-
-// For Move coding conventions, see
-// https://docs.iota.org/developer/iota-101/move-overview/conventions
-
-
 #[allow(unused_use)]
 
 module Figo_NFT::Figo_NFT {
@@ -152,8 +143,8 @@ module Figo_NFT::Figo_NFT {
 
         let mut component_values = 0x1::vector::empty<0x1::string::String>();
         0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"{name}"));
-        0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"image_url"));
-        0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"image_url"));
+        0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"{image_url}"));
+        0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"{image_url}"));
         0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"{description}"));
         0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"{collection_id}"));
         0x1::vector::push_back(&mut component_values, 0x1::string::utf8(b"{component_type}"));
@@ -263,7 +254,7 @@ module Figo_NFT::Figo_NFT {
         
         event::emit(ComponentEquippedEvent {parent_id: object::id(parent_nft), component_id: object::id(&component_nft), component_type });
         
-        transfer::public_transfer(component_nft, object::id_address(parent_nft));
+        transfer::public_transfer(component_nft, tx_context::sender(ctx));
         
     }
     

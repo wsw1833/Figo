@@ -27,6 +27,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { equipNFT } from '@/app/actions/contract/equip_nft';
+import { useToast } from '@/hooks/use-toast';
+import { unequipNFT } from '@/app/actions/contract/unequip_nft';
+import { equip_nft, unequip_nft } from '@/app/actions/nfts/equip';
+import { formatAddress } from '@/lib/utils';
 
 export interface parentNFTItem {
   objectID: string;
@@ -44,7 +49,7 @@ export interface componentNFTItem {
   image_url: string;
   component_type?: string;
   ipfs: string;
-  equipped_on?: string;
+  equipped_on?: parentNFTItem;
 }
 
 type Item = parentNFTItem | componentNFTItem;
@@ -183,7 +188,7 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
             <Image src={Iota} alt="iota" className="w-4 h-4" />
             Iota
           </Badge>
-          {item.objectID}
+          {formatAddress(item.objectID)}
         </SheetDescription>
       </SheetHeader>
       <div className="py-6">
@@ -252,6 +257,7 @@ function AccessorySheetContent({
 }) {
   const [isEquipped, setIsEquipped] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleClick = () => {
     const newState = !isEquipped;
@@ -263,21 +269,69 @@ function AccessorySheetContent({
   };
 
   const handleCardSelect = ({
+    equipped,
     parent,
     component,
   }: {
-    parent: [componentNFTItem] | undefined;
+    equipped: parentNFTItem | undefined;
+    parent: string;
     component: string;
   }) => {
     // Handle the card selection logic here and equip onto it
-    if (parent) {
-      const isObjectIDPresent = parent.some((p) => p.objectID === component);
-      if (isObjectIDPresent) {
-      }
+    if (equipped) {
+      handleUnequip({ parent, component });
+    } else {
+      handleEquip({ parent, component });
     }
-    // if includes then unequip, else equip (parent.objectID, component.objectID);
+  };
 
-    // Close the dialog after selection
+  const handleEquip = async ({
+    parent,
+    component,
+  }: {
+    parent: string;
+    component: string;
+  }) => {
+    await equipNFT(parent, component);
+
+    const result = await equip_nft(parent, component);
+
+    if (result) {
+      toast({
+        title: 'NFT Equipped Successfully!',
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: 'Error Equipping NFT!',
+        duration: 3000,
+      });
+    }
+    setIsDialogOpen(false);
+  };
+
+  const handleUnequip = async ({
+    parent,
+    component,
+  }: {
+    parent: string;
+    component: string;
+  }) => {
+    await unequipNFT(parent, component);
+
+    const result = await unequip_nft(parent, component);
+
+    if (result) {
+      toast({
+        title: 'NFT Unequipped Successfully!',
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: 'Error Unequipping NFT!',
+        duration: 3000,
+      });
+    }
     setIsDialogOpen(false);
   };
   return (
@@ -300,7 +354,15 @@ function AccessorySheetContent({
         </SheetDescription>
       </SheetHeader>
       <div className="py-6">
-        <div className="h-60 w-full bg-gradient-to-br from-blue-400 to-teal-500 rounded-lg mb-4"></div>
+        <div className="w-full h-[18rem] flex flex-col items-center justify-center">
+          <Image
+            src={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.image_url}`}
+            alt="parentNFT"
+            width={150}
+            height={150}
+            className="w-max h-max"
+          />
+        </div>
         <h3 className="font-medium text-lg">Asset Description</h3>
         <p className="text-base mb-4">{item.description}</p>
         <div className="space-y-4"></div>
@@ -323,8 +385,8 @@ function AccessorySheetContent({
         {item.equipped_on ? 'Unequip' : 'Equip'}
       </Button>
       {item.equipped_on ? (
-        <SheetDescription className="font-light text-[#737373] mb-4">
-          Equipped at Parent {item.objectID}
+        <SheetDescription className="font-light text-[#737373] mb-4 w-max">
+          Equipped at Parent {formatAddress(item.equipped_on.objectID)}
         </SheetDescription>
       ) : (
         <></>
@@ -372,7 +434,8 @@ function AccessorySheetContent({
                 tabs="accessories"
                 onClick={() =>
                   handleCardSelect({
-                    parent: card.equipped_components,
+                    equipped: item.equipped_on,
+                    parent: card.objectID,
                     component: item.objectID,
                   })
                 }

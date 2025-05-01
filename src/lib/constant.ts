@@ -1,8 +1,8 @@
 export const Figo_NFT_PKG_ID =
-  '0xc4389d584eeb438528e55e56373c8b3a2888d6acc50dab66f5a021f278c4dbb3';
+  '0x3c7b93a8f261cbf31024bc754779e778a3a28997ab980c8bb8e19eaaf579d144';
 
 export const collection_ID =
-  '0xa7e2225eb8fbada05d01c3b1fbc6870cd63f6523fa773e98d9db154c998f8a45';
+  '0x4f448f426701f2cba040e8c34744b9ef25a54364e4374921d4a085028ed46cab';
 
 export const itemsData = [
   {
@@ -42,7 +42,7 @@ export const itemsData = [
     id: 5,
     name: 'Space boots',
     description:
-      'A powerful bomb that can be equipped to the Beams and explodes in PINK!',
+      'A powerful boots that allow you to jump far and high in SPACE!',
     image_url: 'QmUd7RK9VaGnqFDLNdeU7DdjvYuKy2wDBMwkGsy59nLzNn',
     component_type: 'Boots',
     ipfs: 'QmPv5aSX2skY1zhn6K6rrfkcJSidSRJiAchUv6qxZ3KzPK/14.json',

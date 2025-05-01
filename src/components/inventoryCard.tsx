@@ -29,7 +29,7 @@ export default function InventoryCard({
   return (
     <div className="flex items-center p-3 mb-4 rounded-[16px] border border-gray-200 bg-white shadow-sm">
       <div className="flex-shrink-0 mr-4">
-        <div className="h-14 w-14 rounded-[16px] bg-blue-500 overflow-hidden">
+        <div className="h-14 w-14 rounded-[16px] overflow-hidden">
           {imageSrc ? (
             <Image
               src={imageSrc || '/placeholder.svg'}
@@ -39,7 +39,7 @@ export default function InventoryCard({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-blue-500" />
+            <div className="h-full w-full" />
           )}
         </div>
       </div>

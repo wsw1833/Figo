@@ -35,6 +35,7 @@ import { getAdapter } from '@/misc/adapter';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
 import { useIotaClient } from '@iota/dapp-kit';
+import { createCollectionNFT } from '@/app/actions/contract/create-collection';
 
 export function Header({ addr }: { addr: string | null }): JSX.Element {
   const [account, setAccount] = useState<string | null>('');
@@ -68,6 +69,7 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
   const handleScan = () => {
     // In real app, this would come from NFC reader
     setScanData(mockScanData);
+
     handleMintParent();
   };
 
@@ -79,7 +81,7 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
         collection_ID,
         scanData.name,
         scanData.description,
-        scanData.image_url,
+        `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${scanData.image_url}`,
         client
       );
 

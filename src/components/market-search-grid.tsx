@@ -102,7 +102,7 @@ function SheetDisplay({
         collection_ID,
         item.name,
         item.description,
-        item.image_url,
+        `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.image_url}`,
         item.component_type,
         client
       );
