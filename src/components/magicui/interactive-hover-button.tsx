@@ -28,6 +28,7 @@ export const InteractiveHoverButton = React.forwardRef<
         <Image
           src={nightly}
           alt="nightly"
+          priority
           className="w-6 h-6 transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0"
         />
       </div>

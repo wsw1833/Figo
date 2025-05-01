@@ -54,9 +54,9 @@ export default function Home() {
   return (
     <div className=" min-w-screen h-screen py-[10rem]">
       <div className="w-full z-50 h-max flex flex-col items-center justify-start gap-8">
-        <Image src={logo} alt="logo" className="w-[10rem]" />
+        <Image src={logo} alt="logo" className="w-[10rem]" priority />
         <span className="font-semibold md:text-3xl text-2xl relative text-center">
-          NFC-Powered Phygital for Multi-Asset NFT Management on{' '}
+          NFC-Powered Phygital Asset for NFT Collection Management on{' '}
           <AuroraText>IOTA</AuroraText>
         </span>
         <InteractiveHoverButton className="my-10" onClick={connectHandler}>

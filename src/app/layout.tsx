@@ -6,7 +6,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Figo',
-  description: 'NFT management with Figo on IOTA',
+  description: 'NFC-Powered Phygital Asset NFT Management with Figo on IOTA',
 };
 
 export default function RootLayout({

@@ -172,7 +172,12 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
                   onClick={handleScan}
                 >
                   Scan
-                  <Image src={nightly} alt="logo" className="w-6 h-6" />
+                  <Image
+                    src={nightly}
+                    alt="logo"
+                    className="w-6 h-6"
+                    priority
+                  />
                 </button>
               </DrawerTrigger>
               <DrawerContent className="h-max gap-3 w-full flex items-center justify-center">
