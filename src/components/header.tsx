@@ -66,13 +66,13 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
     }
   };
 
-  const mockScanData: NFTFormData = {
-    name: 'Garfield',
-    description:
-      'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
-    image_url: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
-    ipfs: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
-  };
+  // const mockScanData: NFTFormData = {
+  //   name: 'Garfield',
+  //   description:
+  //     'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
+  //   image_url: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
+  //   ipfs: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
+  // };
 
   const read = async () => {
     if (!nfcSupported) return;

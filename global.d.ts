@@ -1,6 +1,3 @@
-// Step 1: Create a types declaration file
-// Create a file called global.d.ts in your project root
-
 // global.d.ts
 interface NDEFRecord {
   recordType: string;
