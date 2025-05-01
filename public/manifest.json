@@ -1,0 +1,22 @@
+{
+  "name": "Figo on Iota",
+  "short_name": "FigoApp",
+  "description": "NFC-Powered Phygital Asset NFT Management on IOTA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/assets/figo_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/figo_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "permissions": ["nfc"]
+}

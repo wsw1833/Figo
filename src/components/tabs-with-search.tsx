@@ -209,6 +209,7 @@ function CollectionSheetContent({ item }: { item: parentNFTItem }) {
         <div className="space-y-4">
           {item.equipped_components?.map((component) => (
             <InventoryCard
+              key={component.objectID}
               imageSrc={`${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${component.image_url}`}
               name={component.name}
               title="Molly Equipment 1.0"

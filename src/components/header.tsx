@@ -35,11 +35,19 @@ import { getAdapter } from '@/misc/adapter';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
 import { useIotaClient } from '@iota/dapp-kit';
-import { createCollectionNFT } from '@/app/actions/contract/create-collection';
+
+interface NfcData {
+  [key: string]: string | undefined;
+  name?: string;
+  description?: string;
+  image_url?: string;
+  ipfs?: string;
+}
 
 export function Header({ addr }: { addr: string | null }): JSX.Element {
   const [account, setAccount] = useState<string | null>('');
-  const [scanData, setScanData] = useState<NFTFormData | null>(null);
+  const [nfcSupported, setNfcSupported] = useState(false);
+  const [scanData, setScanData] = useState<NfcData | null>(null);
   const { toast } = useToast();
   const client = useIotaClient();
 
@@ -66,11 +74,50 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
     ipfs: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
   };
 
-  const handleScan = () => {
-    // In real app, this would come from NFC reader
-    setScanData(mockScanData);
+  const read = async () => {
+    if (!nfcSupported) return;
 
-    handleMintParent();
+    try {
+      const ndef = new window.NDEFReader();
+
+      await ndef.scan();
+
+      ndef.addEventListener('reading', ({ message }) => {
+        const result: NfcData = {};
+
+        for (const record of message.records) {
+          if (record.recordType === 'text') {
+            const text = new TextDecoder(record.encoding).decode(record.data);
+            const [key, ...valueParts] = text.split(':');
+            if (key) {
+              result[key] = valueParts.join(':');
+            }
+          }
+        }
+        setScanData(result);
+      });
+
+      ndef.addEventListener('readingerror', () => {});
+    } catch (error) {
+      toast({
+        title: `Error reading NFC: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      });
+    }
+  };
+
+  const handleScan = async () => {
+    if (typeof window !== 'undefined' && 'NDEFReader' in window) {
+      setNfcSupported(true);
+      await read();
+      handleMintParent();
+    } else {
+      toast({
+        title: 'Web NFC API is not supported in this browser.',
+        duration: 10000,
+      });
+    }
   };
 
   const handleMintParent = async () => {

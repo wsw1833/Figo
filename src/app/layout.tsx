@@ -16,6 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <link rel="manifest" href="/manifest.json" />
       <IotaProvider>
         <body className={`antialiased`}>{children}</body>
       </IotaProvider>

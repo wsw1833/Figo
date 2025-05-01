@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let parent = await ParentNFT.findOne({ objectID: body.parentObj });
+    const parent = await ParentNFT.findOne({ objectID: body.parentObj });
     if (!parent) {
       return NextResponse.json(
         {
@@ -25,7 +25,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let component = await ComponentNFT.findOne({ objectID: body.componentObj });
+    const component = await ComponentNFT.findOne({
+      objectID: body.componentObj,
+    });
     if (!component) {
       return NextResponse.json(
         {
