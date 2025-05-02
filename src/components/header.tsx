@@ -35,6 +35,7 @@ import { getAdapter } from '@/misc/adapter';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
 import { useIotaClient } from '@iota/dapp-kit';
+import { getObjectDigest } from '@/app/actions/contract/get-object';
 
 interface NfcData {
   [key: string]: string | undefined;
@@ -76,7 +77,7 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
     if (!nfcSupported) {
       toast({
         title: 'Web NFC API is not supported in this browser.',
-        duration: 10000,
+        duration: 3000,
       });
       return;
     }
@@ -131,31 +132,21 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
 
         // Proceed with minting
         try {
-          const createdObjectId = await mintParentNFT(
+          const txid = await mintParentNFT(
             collection_ID,
             nfcData.name,
             nfcData.description,
-            `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${nfcData.image_url}`,
-            client
+            `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${nfcData.image_url}`
           );
 
-          const formData: NFTFormData = {
-            objectID: createdObjectId?.toString(),
-            name: nfcData.name,
-            description: nfcData.description,
-            image_url: nfcData.image_url,
-            ipfs: nfcData.ipfs,
-          };
+          monitorParentTransactionForObjectId(txid, nfcData);
 
-          const result = await createNFT(formData, account);
-
-          if (result) {
-            toast({
-              title: 'NFT Minted Successfully!',
-              description: 'Check the transaction on Iota Testnet Explorer',
-              duration: 3000,
-            });
-          }
+          toast({
+            title: 'Transaction Submitted',
+            description:
+              'Your NFT minting transaction has been sent to the blockchain',
+            duration: 3000,
+          });
         } catch (error) {
           toast({
             title: 'NFT Minting Failed!',
@@ -184,6 +175,92 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
       });
       setIsScanning(false);
     }
+  };
+
+  const monitorParentTransactionForObjectId = (
+    txid: string,
+    nfcData: NfcData
+  ) => {
+    // Configure monitoring parameters
+    const maxAttempts = 60; // 10 minutes at 10-second intervals
+    const intervalTime = 10000; // 10 seconds
+    let attempts = 0;
+
+    // Start the monitoring interval
+    const intervalId = setInterval(async () => {
+      try {
+        attempts++;
+        console.log(
+          `Checking parent transaction ${txid}, attempt ${attempts}/${maxAttempts}`
+        );
+
+        // Check if objectID has been created
+        const createdObjectId = await getObjectDigest(client, txid);
+
+        // If we have an objectID, record it and stop monitoring
+        if (createdObjectId) {
+          clearInterval(intervalId);
+          console.log(`Parent NFT ObjectID created: ${createdObjectId}`);
+
+          // Record to database directly
+          const formData: NFTFormData = {
+            objectID: createdObjectId.toString(),
+            name: nfcData.name,
+            description: nfcData.description,
+            image_url: nfcData.image_url,
+            ipfs: nfcData.ipfs,
+          };
+
+          try {
+            await createNFT(formData, account);
+
+            toast({
+              title: 'NFC NFT Minting Completed!',
+              description: 'Your NFT has been minted and recorded successfully',
+              duration: 3000,
+            });
+          } catch (dbError) {
+            console.error('Error writing to database:', dbError);
+            toast({
+              title: 'Database Error',
+              description: 'Transaction completed but database update failed.',
+              duration: 5000,
+            });
+          }
+        } else if (attempts >= maxAttempts) {
+          clearInterval(intervalId);
+
+          toast({
+            title: 'Transaction Verification Timeout',
+            description:
+              'The transaction is taking longer than expected. Check status later.',
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Error monitoring transaction:', error);
+
+        if (attempts >= maxAttempts) {
+          clearInterval(intervalId);
+
+          toast({
+            title: 'Transaction Verification Error',
+            description: 'There was an error verifying your transaction.',
+            duration: 5000,
+          });
+        }
+      }
+    }, intervalTime);
+
+    // Store the interval ID for potential cleanup
+    const activeIntervals = JSON.parse(
+      sessionStorage.getItem('activeMonitoringIntervals') || '{}'
+    );
+    activeIntervals[txid] = intervalId;
+    sessionStorage.setItem(
+      'activeMonitoringIntervals',
+      JSON.stringify(activeIntervals)
+    );
   };
 
   return (

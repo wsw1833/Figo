@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
 import { useIotaClient } from '@iota/dapp-kit';
+import { getObjectDigest } from '@/app/actions/contract/get-object';
 
 interface Item {
   id: number;
@@ -98,48 +99,6 @@ function SheetDisplay({
   const client = useIotaClient();
   const [isMinting, setIsMinting] = useState(false);
 
-  useEffect(() => {
-    const attemptRecovery = async () => {
-      if (!account || !navigator.onLine) return;
-
-      const key = `pendingNFTs_${account}`;
-      const pendingNFTs = JSON.parse(localStorage.getItem(key) || '[]');
-
-      if (pendingNFTs.length > 0) {
-        toast({
-          title: 'Syncing pending NFTs',
-          description: `Found ${pendingNFTs.length} pending database updates`,
-          duration: 3000,
-        });
-
-        for (const nft of pendingNFTs) {
-          try {
-            // Don't use the retry function here, just try once
-            const result = await createNFT(nft, account);
-            if (result) {
-              removeFromLocalBackup(nft, account);
-            }
-          } catch (error) {
-            console.error('Recovery failed for NFT:', nft);
-          }
-        }
-      }
-    };
-
-    attemptRecovery();
-
-    // Set up polling to periodically check for pending NFTs
-    const intervalId = setInterval(attemptRecovery, 60000); // Check every minute
-
-    // Also try when coming back online
-    window.addEventListener('online', attemptRecovery);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('online', attemptRecovery);
-    };
-  }, [account]);
-
   const handleMint = async (item: Item) => {
     if (isMinting) {
       toast({
@@ -153,36 +112,17 @@ function SheetDisplay({
     setIsMinting(true);
 
     try {
-      const createdObjectId = await mintComponentNFT(
+      const txid = await mintComponentNFT(
         collection_ID,
         item.name,
         item.description,
         `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${item.image_url}`,
-        item.component_type,
-        client
+        item.component_type
       );
 
-      if (!createdObjectId) {
-        throw new Error('Failed to create object ID');
-      }
-      const formData: NFTFormData = {
-        objectID: createdObjectId?.toString(),
-        name: item.name,
-        description: item.description,
-        image_url: item.image_url,
-        component_type: item.component_type,
-        ipfs: item.ipfs,
-      };
+      monitorTransactionForObjectId(txid, item);
 
-      const dbResult = await writeToDBWithRetry(formData, account);
-
-      if (dbResult) {
-        toast({
-          title: 'NFT Minting Successfully Completed!',
-          description: 'Check the transaction on Iota Testnet Explorer',
-          duration: 3000,
-        });
-      }
+      return txid;
     } catch (error) {
       console.error('Minting error:', error);
 
@@ -197,75 +137,101 @@ function SheetDisplay({
     }
   };
 
-  const writeToDBWithRetry = async (
-    formData: NFTFormData,
-    account: string | null,
-    retries = 5
-  ): Promise<boolean> => {
-    if (!account) return false;
-
-    saveToLocalBackup(formData, account);
-
-    // Try multiple times with increasing delays
-    for (let attempt = 0; attempt < retries; attempt++) {
-      try {
-        const result = await createNFT(formData, account);
-
-        if (result) {
-          removeFromLocalBackup(formData, account);
-          return true;
-        }
-
-        console.log(`DB write attempt ${attempt + 1} failed, retrying...`);
-
-        await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * Math.pow(2, attempt))
-        );
-      } catch (error) {
-        console.error(`DB write attempt ${attempt + 1} error:`, error);
-
-        await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * Math.pow(2, attempt))
-        );
-      }
-    }
-
+  const monitorTransactionForObjectId = (txid: string, item: Item) => {
+    // Success toast for transaction submission
     toast({
-      title: 'Database Update Issue',
-      description:
-        'Transaction completed on blockchain but database update is pending. Will retry automatically.',
-      duration: 5000,
+      title: 'NFT Transaction Submitted',
+      description: 'Your transaction is being processed on the blockchain',
+      duration: 3000,
     });
 
-    // Keep in localStorage for recovery
-    return false;
+    // Configure monitoring parameters
+    const maxAttempts = 60; // 10 minutes at 10-second intervals
+    const intervalTime = 10000; // 10 seconds
+    let attempts = 0;
+
+    // Start the monitoring interval
+    const intervalId = setInterval(async () => {
+      try {
+        attempts++;
+        console.log(
+          `Checking transaction ${txid}, attempt ${attempts}/${maxAttempts}`
+        );
+
+        // Check if objectID has been created
+        const createdObjectId = await getObjectDigest(client, txid);
+
+        // If we have an objectID, record it and stop monitoring
+        if (createdObjectId) {
+          clearInterval(intervalId);
+          console.log(`ObjectID created: ${createdObjectId}`);
+
+          // Record to database directly
+          const formData: NFTFormData = {
+            objectID: createdObjectId.toString(),
+            name: item.name,
+            description: item.description,
+            image_url: item.image_url,
+            component_type: item.component_type,
+            ipfs: item.ipfs,
+          };
+
+          try {
+            await createNFT(formData, account);
+
+            toast({
+              title: 'NFT Minting Completed!',
+              description: 'Your NFT has been minted and recorded successfully',
+              duration: 3000,
+            });
+          } catch (dbError) {
+            console.error('Error writing to database:', dbError);
+            toast({
+              title: 'Database Error',
+              description: 'Transaction completed but database update failed.',
+              duration: 5000,
+            });
+          }
+        } else if (attempts >= maxAttempts) {
+          // Stop checking after max attempts
+          clearInterval(intervalId);
+
+          toast({
+            title: 'Transaction Verification Timeout',
+            description:
+              'The transaction is taking longer than expected. Check status later.',
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Error monitoring transaction:', error);
+
+        // Stop on error only if max attempts reached
+        if (attempts >= maxAttempts) {
+          clearInterval(intervalId);
+
+          toast({
+            title: 'Transaction Verification Error',
+            description: 'There was an error verifying your transaction.',
+            duration: 5000,
+          });
+        }
+      }
+    }, intervalTime);
+
+    // Store the interval ID for potential cleanup
+    storeIntervalId(txid, intervalId);
   };
 
-  // Helper functions for local backup
-  const saveToLocalBackup = (formData: NFTFormData, account: string | null) => {
-    if (!account) return;
-
-    const key = `pendingNFTs_${account}`;
-    const pendingNFTs = JSON.parse(localStorage.getItem(key) || '[]');
-    pendingNFTs.push({
-      ...formData,
-      timestamp: Date.now(),
-    });
-    localStorage.setItem(key, JSON.stringify(pendingNFTs));
-  };
-
-  const removeFromLocalBackup = (
-    formData: NFTFormData,
-    account: string | null
-  ) => {
-    if (!account) return;
-
-    const key = `pendingNFTs_${account}`;
-    const pendingNFTs = JSON.parse(localStorage.getItem(key) || '[]');
-    const filtered = pendingNFTs.filter(
-      (nft: any) => nft.objectID !== formData.objectID
+  const storeIntervalId = (txid: string, intervalId: NodeJS.Timeout) => {
+    const activeIntervals = JSON.parse(
+      sessionStorage.getItem('activeMonitoringIntervals') || '{}'
     );
-    localStorage.setItem(key, JSON.stringify(filtered));
+    activeIntervals[txid] = intervalId;
+    sessionStorage.setItem(
+      'activeMonitoringIntervals',
+      JSON.stringify(activeIntervals)
+    );
   };
 
   return (
