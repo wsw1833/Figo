@@ -3,7 +3,7 @@
 import Iota from '@images/Iota-circle.svg';
 import Image from 'next/image';
 import pinata from '@images/pinata.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import MagicalCard from './magicalCard';
@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createNFT } from '@/app/actions/nfts/nfts';
 import { NFTFormData } from '@/lib/utils';
 import { useIotaClient } from '@iota/dapp-kit';
+
 interface Item {
   id: number;
   name: string;
@@ -95,8 +96,62 @@ function SheetDisplay({
 }) {
   const { toast } = useToast();
   const client = useIotaClient();
+  const [isMinting, setIsMinting] = useState(false);
+
+  useEffect(() => {
+    const attemptRecovery = async () => {
+      if (!account || !navigator.onLine) return;
+
+      const key = `pendingNFTs_${account}`;
+      const pendingNFTs = JSON.parse(localStorage.getItem(key) || '[]');
+
+      if (pendingNFTs.length > 0) {
+        toast({
+          title: 'Syncing pending NFTs',
+          description: `Found ${pendingNFTs.length} pending database updates`,
+          duration: 3000,
+        });
+
+        for (const nft of pendingNFTs) {
+          try {
+            // Don't use the retry function here, just try once
+            const result = await createNFT(nft, account);
+            if (result) {
+              removeFromLocalBackup(nft, account);
+            }
+          } catch (error) {
+            console.error('Recovery failed for NFT:', nft);
+          }
+        }
+      }
+    };
+
+    attemptRecovery();
+
+    // Set up polling to periodically check for pending NFTs
+    const intervalId = setInterval(attemptRecovery, 60000); // Check every minute
+
+    // Also try when coming back online
+    window.addEventListener('online', attemptRecovery);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('online', attemptRecovery);
+    };
+  }, [account]);
 
   const handleMint = async (item: Item) => {
+    if (isMinting) {
+      toast({
+        title: 'Already processing',
+        description: 'Please wait for the current transaction to complete',
+        duration: 2000,
+      });
+      return;
+    }
+
+    setIsMinting(true);
+
     try {
       const createdObjectId = await mintComponentNFT(
         collection_ID,
@@ -107,6 +162,9 @@ function SheetDisplay({
         client
       );
 
+      if (!createdObjectId) {
+        throw new Error('Failed to create object ID');
+      }
       const formData: NFTFormData = {
         objectID: createdObjectId?.toString(),
         name: item.name,
@@ -115,21 +173,99 @@ function SheetDisplay({
         component_type: item.component_type,
         ipfs: item.ipfs,
       };
-      const result = await createNFT(formData, account);
-      if (result) {
+
+      const dbResult = await writeToDBWithRetry(formData, account);
+
+      if (dbResult) {
         toast({
-          title: 'NFT Minting Successfully!',
+          title: 'NFT Minting Successfully Completed!',
           description: 'Check the transaction on Iota Testnet Explorer',
           duration: 3000,
         });
       }
     } catch (error) {
+      console.error('Minting error:', error);
+
       toast({
         title: 'NFT Minting Failed!',
-        description: 'Failed to mint the NFT',
-        duration: 3000,
+        description:
+          error instanceof Error ? error.message : 'Failed to mint the NFT',
+        duration: 5000,
       });
+    } finally {
+      setIsMinting(false);
     }
+  };
+
+  const writeToDBWithRetry = async (
+    formData: NFTFormData,
+    account: string | null,
+    retries = 5
+  ): Promise<boolean> => {
+    if (!account) return false;
+
+    saveToLocalBackup(formData, account);
+
+    // Try multiple times with increasing delays
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const result = await createNFT(formData, account);
+
+        if (result) {
+          removeFromLocalBackup(formData, account);
+          return true;
+        }
+
+        console.log(`DB write attempt ${attempt + 1} failed, retrying...`);
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * Math.pow(2, attempt))
+        );
+      } catch (error) {
+        console.error(`DB write attempt ${attempt + 1} error:`, error);
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * Math.pow(2, attempt))
+        );
+      }
+    }
+
+    toast({
+      title: 'Database Update Issue',
+      description:
+        'Transaction completed on blockchain but database update is pending. Will retry automatically.',
+      duration: 5000,
+    });
+
+    // Keep in localStorage for recovery
+    return false;
+  };
+
+  // Helper functions for local backup
+  const saveToLocalBackup = (formData: NFTFormData, account: string | null) => {
+    if (!account) return;
+
+    const key = `pendingNFTs_${account}`;
+    const pendingNFTs = JSON.parse(localStorage.getItem(key) || '[]');
+    pendingNFTs.push({
+      ...formData,
+      timestamp: Date.now(),
+    });
+    localStorage.setItem(key, JSON.stringify(pendingNFTs));
+  };
+
+  const removeFromLocalBackup = (
+    formData: NFTFormData,
+    account: string | null
+  ) => {
+    if (!account) return;
+
+    const key = `pendingNFTs_${account}`;
+    const pendingNFTs = JSON.parse(localStorage.getItem(key) || '[]');
+    const filtered = pendingNFTs.filter(
+      (nft: any) => nft.objectID !== formData.objectID
+    );
+    localStorage.setItem(key, JSON.stringify(filtered));
   };
 
   return (

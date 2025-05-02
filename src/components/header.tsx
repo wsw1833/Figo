@@ -47,13 +47,18 @@ interface NfcData {
 export function Header({ addr }: { addr: string | null }): JSX.Element {
   const [account, setAccount] = useState<string | null>('');
   const [nfcSupported, setNfcSupported] = useState(false);
-  const [scanData, setScanData] = useState<NfcData | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
   const client = useIotaClient();
 
   useEffect(() => {
     const addr = localStorage.getItem('walletAddress');
     setAccount(addr);
+
+    // Check NFC support on component mount
+    if (typeof window !== 'undefined' && 'NDEFReader' in window) {
+      setNfcSupported(true);
+    }
   }, []);
 
   const disconnectHandler = async () => {
@@ -61,100 +66,123 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
       const adapter = await getAdapter();
       await adapter.disconnect();
       localStorage.removeItem('walletAddress');
+      setAccount(null);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // const mockScanData: NFTFormData = {
-  //   name: 'Garfield',
-  //   description:
-  //     'A laid-back, sarcastic vibe with its cool expression and iconic orange stripes.',
-  //   image_url: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
-  //   ipfs: `QmcKJ24X74eh2NK1FYMsRtMwWiYRBsKe1u22irpTWpuW8J`,
-  // };
+  const handleScan = async () => {
+    if (!nfcSupported) {
+      toast({
+        title: 'Web NFC API is not supported in this browser.',
+        duration: 10000,
+      });
+      return;
+    }
 
-  const read = async () => {
-    if (!nfcSupported) return;
+    if (!account) {
+      toast({
+        title: 'Please connect your wallet first',
+        duration: 3000,
+      });
+      return;
+    }
 
     try {
-      const ndef = new window.NDEFReader();
+      setIsScanning(true);
+      toast({
+        title: 'Scanning NFC tag...',
+        duration: 2000,
+      });
 
+      const ndef = new window.NDEFReader();
       await ndef.scan();
 
-      ndef.addEventListener('reading', ({ message }) => {
-        const result: NfcData = {};
-
+      ndef.addEventListener('reading', async ({ message }) => {
+        // Parse NFC data
+        const nfcData: NfcData = {};
         for (const record of message.records) {
           if (record.recordType === 'text') {
             const text = new TextDecoder(record.encoding).decode(record.data);
             const [key, ...valueParts] = text.split(':');
             if (key) {
-              result[key] = valueParts.join(':');
+              nfcData[key] = valueParts.join(':');
             }
           }
         }
-        setScanData(result);
-      });
 
-      ndef.addEventListener('readingerror', () => {});
-    } catch (error) {
-      toast({
-        title: `Error reading NFC: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      });
-    }
-  };
+        // Validate NFC data
+        if (!nfcData.name || !nfcData.description || !nfcData.image_url) {
+          toast({
+            title: 'Invalid NFC data',
+            description: 'The NFC tag is missing required information',
+            duration: 3000,
+          });
+          setIsScanning(false);
+          return;
+        }
 
-  const handleScan = async () => {
-    if (typeof window !== 'undefined' && 'NDEFReader' in window) {
-      setNfcSupported(true);
-      await read();
-      handleMintParent();
-    } else {
-      toast({
-        title: 'Web NFC API is not supported in this browser.',
-        duration: 10000,
-      });
-    }
-  };
-
-  const handleMintParent = async () => {
-    if (!scanData || !account) return;
-
-    try {
-      const createdObjectId = await mintParentNFT(
-        collection_ID,
-        scanData.name,
-        scanData.description,
-        `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${scanData.image_url}`,
-        client
-      );
-
-      const formData: NFTFormData = {
-        objectID: createdObjectId?.toString(),
-        name: scanData.name,
-        description: scanData.description,
-        image_url: scanData.image_url,
-        ipfs: scanData.ipfs,
-      };
-
-      const result = await createNFT(formData, account);
-
-      if (result) {
         toast({
-          title: 'NFT Minting Successfully!',
-          description: 'Check the transaction on Iota Testnet Explorer',
+          title: 'NFC Data Read Successfully',
+          description: `Found: ${nfcData.name}`,
+          duration: 2000,
+        });
+
+        // Proceed with minting
+        try {
+          const createdObjectId = await mintParentNFT(
+            collection_ID,
+            nfcData.name,
+            nfcData.description,
+            `${process.env.NEXT_PUBLIC_IPFS_GATEWAY}/ipfs/${nfcData.image_url}`,
+            client
+          );
+
+          const formData: NFTFormData = {
+            objectID: createdObjectId?.toString(),
+            name: nfcData.name,
+            description: nfcData.description,
+            image_url: nfcData.image_url,
+            ipfs: nfcData.ipfs,
+          };
+
+          const result = await createNFT(formData, account);
+
+          if (result) {
+            toast({
+              title: 'NFT Minted Successfully!',
+              description: 'Check the transaction on Iota Testnet Explorer',
+              duration: 3000,
+            });
+          }
+        } catch (error) {
+          toast({
+            title: 'NFT Minting Failed!',
+            description:
+              error instanceof Error ? error.message : 'Failed to mint the NFT',
+            duration: 3000,
+          });
+        } finally {
+          setIsScanning(false);
+        }
+      });
+
+      ndef.addEventListener('readingerror', () => {
+        toast({
+          title: 'Error reading NFC',
+          description: 'Failed to read NFC tag data',
           duration: 3000,
         });
-      }
+        setIsScanning(false);
+      });
     } catch (error) {
       toast({
-        title: 'NFT Minting Failed!',
-        description: 'Failed to mint the NFT',
+        title: `Error initializing NFC reader`,
+        description: error instanceof Error ? error.message : String(error),
         duration: 3000,
       });
+      setIsScanning(false);
     }
   };
 
@@ -170,6 +198,7 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
                 <button
                   className={`${navigationMenuTriggerStyle()} gap-1 md:text-lg flex items-center justify-center`}
                   onClick={handleScan}
+                  disabled={isScanning}
                 >
                   Scan
                   <Image

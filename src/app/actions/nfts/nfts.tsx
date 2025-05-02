@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { NFTFormData } from '@/lib/utils';
-import { redirect } from 'next/navigation';
 
 export const createNFT = async (
   formData: NFTFormData,

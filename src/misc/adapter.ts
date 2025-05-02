@@ -6,7 +6,7 @@ export const getAdapter = async (persisted = true) => {
   _adapter = await NightlyConnectIotaAdapter.build({
     appMetadata: {
       name: 'Figo on Iota',
-      description: 'Phygital Asset Collection Management DApp on Iota',
+      description: 'Figo on Iota',
       icon: 'https://docs.nightly.app/img/logo.png',
     },
     persistent: persisted,
