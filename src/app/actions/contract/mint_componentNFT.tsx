@@ -7,7 +7,8 @@ export async function mintComponentNFT(
   name: string,
   description: string,
   url: string,
-  component_type: string
+  component_type: string,
+  client: any
 ) {
   const adapter = await getAdapter();
   const account = await adapter.getAccounts();
@@ -36,5 +37,19 @@ export async function mintComponentNFT(
     account: account[0],
   });
 
-  return txid.digest;
+  const digest = txid.digest;
+
+  const res = await client.getTransactionBlock({
+    digest,
+    options: {
+      showEffects: true,
+      showObjectChanges: true,
+    },
+  });
+
+  const createdObjects = res.objectChanges?.filter(
+    (change: any) => change.type === 'created'
+  );
+  const createdObjectIds = createdObjects?.map((obj: any) => obj.objectId);
+  return createdObjectIds;
 }
