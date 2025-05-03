@@ -70,7 +70,7 @@ Figo addresses the limitations of physical collectible figures by combining NFC-
 
 ---
 
-![url](https://www.youtube.com/watch?v=XA3NTTq-Mo8)
+[Demo Video](https://www.youtube.com/watch?v=XA3NTTq-Mo8)
 
 ### 🏅 Selected Track
 
