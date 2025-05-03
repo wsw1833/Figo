@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error in POST /api/owners:', error);
+    console.error('Error in POST /api/unequip:', error);
     return NextResponse.json({ success: false, error: error }, { status: 500 });
   }
 }

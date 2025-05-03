@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import logo from '@images/figo_logo.png';
+import logo from '@images/figo-iota.svg';
 import { AuroraText } from '@/components/magicui/aurora-text';
 import { InteractiveHoverButton } from '@/components/magicui/interactive-hover-button';
 import { MarqueeDemo } from '@/components/marquehorizon';
@@ -54,7 +54,7 @@ export default function Home() {
   return (
     <div className=" min-w-screen h-screen py-[10rem]">
       <div className="w-full z-50 h-max flex flex-col items-center justify-start gap-8">
-        <Image src={logo} alt="logo" className="w-[10rem]" priority />
+        <Image src={logo} alt="logo" className="w-[15rem]" priority />
         <span className="font-semibold md:text-3xl text-2xl relative text-center">
           NFC-Powered Phygital Asset for NFT Collection Management on{' '}
           <AuroraText>IOTA</AuroraText>

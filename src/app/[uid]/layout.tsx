@@ -23,7 +23,7 @@ export default function HomeLayout({
   }, []);
 
   return (
-    <div className="min-h-max h-full py-8">
+    <div className="min-h-max h-full py-4">
       <Header addr={address} />
 
       {children}

@@ -392,7 +392,7 @@ function AccessorySheetContent({
       ) : (
         <></>
       )}
-      <SheetFooter className="w-full">
+      <SheetFooter className="w-full gap-2">
         <Button
           className="w-full bg-[#4C52E2] hover:bg-[#3733CB]"
           onClick={() =>

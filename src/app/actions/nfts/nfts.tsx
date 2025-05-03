@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { NFTFormData } from '@/lib/utils';
 
 export const createNFT = async (
@@ -19,8 +18,6 @@ export const createNFT = async (
   });
 
   const result = await response.json();
-
-  revalidatePath('/', 'layout');
 
   return {
     success: true,

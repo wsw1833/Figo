@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: owner }, { status: 201 });
   } catch (error) {
-    console.error('Error in POST /api/owners:', error);
+    console.error('Error in POST /api/owner:', error);
     return NextResponse.json({ success: false, error: error }, { status: 500 });
   }
 }

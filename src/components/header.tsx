@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { LogOut, User } from 'lucide-react';
 import nightly from '@images/nfc.svg';
-import logo from '@images/figo_logo.png';
+import logo from '@images/figo-logo.svg';
 import nfcScanAnimation from '@images/mobileNfc.json';
 import Lottie from 'lottie-react';
 import { Button } from './ui/button';
@@ -187,8 +187,8 @@ export function Header({ addr }: { addr: string | null }): JSX.Element {
   };
 
   return (
-    <div className="w-full h-max flex flex-row md:px-16 sm:px-6 px-4 items-start justify-between">
-      <Image src={logo} alt="logo" className="w-14 h-14" priority />
+    <div className="w-full h-max flex flex-row md:px-16 sm:px-6 px-4 items-center justify-between">
+      <Image src={logo} alt="logo" className="w-20 h-20" priority />
 
       <NavigationMenu>
         <NavigationMenuList>
