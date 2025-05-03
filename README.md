@@ -1,4 +1,4 @@
-![Image](https://github.com/user-attachments/assets/22036b32-ac42-4490-85ec-febd6b49b5a2)
+<img src="https://github.com/user-attachments/assets/22036b32-ac42-4490-85ec-febd6b49b5a2" alt="logo" width="50" height="50">
 ![Image](https://github.com/user-attachments/assets/6a349a2a-dc79-4ad2-93b9-d13b54321cba)
 
 ### Figo - Pop Toys, on Iota, for Collection Management & Games 🕹️
